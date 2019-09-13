@@ -1,22 +1,23 @@
-#include "mbed.h"
 
-// disable these LEDs
-DigitalOut led2(P1_29, 0);
-DigitalOut led3(P1_31, 0);
-DigitalOut led4(P2_2, 0);
-DigitalOut led5(P2_3, 0);
-DigitalOut led6(P2_4, 0);
-DigitalOut led7(P2_5, 0);
-DigitalOut led8(P2_6, 0);
+#include <LPC1768/LPC17xx.h>
+#include <map>
+#include <iostream>
 
-// only blink this LED
-DigitalOut myled(P1_28);
+extern "C" int main(void);
+
+void Setup()
+{
+
+}
 
 int main() {
-    while(1) {
-        myled = 1;
-        wait(1);
-        myled = 0;
-        wait(1);
+    Setup();
+
+    std::map<int, int> PinMap;
+
+    for (size_t i = 0; i < 512; i++)
+    {
+        PinMap.insert({i, i * i});
     }
+    
 }
