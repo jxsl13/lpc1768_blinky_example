@@ -1,12 +1,6 @@
 
 #include <LPC17xx/LPC17xx.h>
 
-#ifdef __cplusplus
- extern "C" {
-#endif 
-
-extern void SystemInit (void);
-
 
 void delay_ms(unsigned int ms)
 {
@@ -34,13 +28,3 @@ int main(){
     
 }
 
-
-
-
-
-
-
-
-#ifdef __cplusplus
- }
-#endif 
