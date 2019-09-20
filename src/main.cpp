@@ -1,13 +1,21 @@
-#include "mbed.h"
  
-DigitalOut led1(LED1);
- 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 // main() runs in its own thread in the OS
 int main() {
-    while (true) {
-        led1 = !led1;
-        wait(0.5);
+    int i = 0;
+    
+    while(true) {
+        i++;
     }
 }
+
+
+#ifdef __cplusplus
+}
+#endif
  
  
