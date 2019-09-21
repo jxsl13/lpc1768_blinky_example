@@ -14,7 +14,7 @@ Firmware found: LPC17xx
 ```
 
 First commit that doesn't find the correct firmware
-````
+```
 Firmware found: Nordic nRF51 (might be missing stuff behind the name later on Nordic nRF51 M3/M4 is found)
 302ff20a6d5b806c09e0ca7e996beab3ef3596f4
 ```
