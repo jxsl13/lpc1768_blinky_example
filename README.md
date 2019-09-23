@@ -26,6 +26,7 @@ brew remove platformio open-ocd
 
 #### Python Module 'intelhex' not found
 ```
+cd
 ./.platformio/penv/bin/pip3 install intelhex
 ```
 
@@ -47,6 +48,4 @@ int main() {
         wait(0.5);
     }
 }
- 
- 
 ```
