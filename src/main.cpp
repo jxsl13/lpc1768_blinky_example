@@ -22,10 +22,10 @@ int main()
     while(1)
     {
         LPC_GPIO2->FIOPIN = 0xffffffff;     // Make all the Port pins as high  
-        delay_ms(100);
+        delay_ms(1000);
 
-        LPC_GPIO2->FIOPIN = 0x00;           // Make all the Port pins as low  
-        delay_ms(100);
+        LPC_GPIO2->FIOPIN = 0x000000;       // Make all the Port pins as low  
+        delay_ms(1000);
     }
 }
 
