@@ -1,11 +1,37 @@
-#include "mbed.h"
- 
-DigitalOut led1(LED1);
- 
-// main() runs in its own thread in the OS
-int main() {
-    while (true) {
-        led1 = !led1;
-        wait(0.5);
+#include <LPC17xx/LPC17xx.h> 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void delay_ms(unsigned int ms)
+{
+unsigned int i,j;
+for(i=0;i<ms;i++)
+for(j=0;j<6000;j++);
+}
+
+
+/* start the main program */
+int main() 
+{
+    SystemInit();                    //Clock and PLL configuration 
+    LPC_PINCON->PINSEL4 = 0x000000;  //Configure the PORT2 Pins as GPIO;
+    LPC_GPIO2->FIODIR = 0xffffffff;  //Configure the PORT2 pins as OUTPUT;
+
+    while(1)
+    {
+        LPC_GPIO2->FIOPIN = 0xffffffff;     // Make all the Port pins as high  
+        delay_ms(100);
+
+        LPC_GPIO2->FIOPIN = 0x00;           // Make all the Port pins as low  
+        delay_ms(100);
     }
 }
+
+
+#ifdef __cplusplus
+}
+#endif
+ 
+ 
