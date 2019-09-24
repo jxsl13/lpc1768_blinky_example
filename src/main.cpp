@@ -6,9 +6,9 @@ extern "C" {
 
 void delay_ms(unsigned int ms)
 {
-unsigned int i,j;
+volatile unsigned int i,j;
 for(i=0;i<ms;i++)
-for(j=0;j<6000;j++);
+for(j=0;j<100000;j++);
 }
 
 
@@ -21,11 +21,13 @@ int main()
 
     while(1)
     {
+        LPC_GPIO2->FIOPIN = 0x00000000;      // Make all the Port pins as low  
+        delay_ms(1000);
+
         LPC_GPIO2->FIOPIN = 0xffffffff;     // Make all the Port pins as high  
         delay_ms(1000);
 
-        LPC_GPIO2->FIOPIN = 0x000000;       // Make all the Port pins as low  
-        delay_ms(1000);
+       
     }
 }
 
