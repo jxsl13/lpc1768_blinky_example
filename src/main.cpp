@@ -16,7 +16,6 @@ for(j=0;j<100000;j++);
 int main() 
 {
     
-
     while(1)
     {
         delay_ms(1000);

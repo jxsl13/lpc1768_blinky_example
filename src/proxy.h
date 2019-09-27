@@ -6,6 +6,8 @@
 #elif defined ATMEGA328P
 
 #define BOARD ATMEGA328P_XPLAINED_MINI
-#include <target/ATMEGA328P/asf.h>
+//#include <target/ATMEGA328P/asf.h>
+#include <avr/io.h>
+#include <avr/interrupt.h>
 
 #endif // include platform specific headers.
