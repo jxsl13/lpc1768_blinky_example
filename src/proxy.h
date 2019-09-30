@@ -1,7 +1,7 @@
 #pragma once // include this header only once
 
 #if defined LPC1768
-#include <target/LPC1768/LPC17xx.h>
+#include <target/LPC17xx/LPC17xx.h>
 
 #elif defined ATMEGA328P
 

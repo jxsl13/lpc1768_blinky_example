@@ -1,12 +1,20 @@
-### Using platformIO on macOS with VS Code and the LPC1768 board by KEIL and the ULINK-ME JTAG adapter
-A working platformIO blinky example for the LPC1768 board by KEIL.  
-This was constructed with the help of [maxgerhardt](https://github.com/maxgerhardt) in this forum post [platformIO community forum](https://community.platformio.org/t/how-to-properly-set-the-upload-port-on-macos-lpc1768-board-ulink-me/9560/16).
+### This is a multi target abstraction of an interrupt configuration.
 
+#### Current boards:
+ - Keil MCB1760 (LPC1768 ARM Cortex M-3 Microcontroller)
+ - myAVR Board MK2 V2.20(ATmega328p microcontroller)
+ - Arduino UNO(ATmega328p microcontroller)
 
+#### Target specific READMEs
+ - `src/target/LPC1768/README.md`
+ - `src/target/ATMEGA328P/README.md`
 
-### Troubleshooting
+### Troubleshooting  
 
-#### LPC17xx chipset not correctly identified.
+#### LPC1768 Debugging probe/Programmer not recognized or throws some weird errors.
+First power on the Keil MCB1760 board via USB. Then attach the ribbon cable or the debugging probe to your board and lastly power on your debugging probe by connecting it via USB as well.
+
+#### LPC17xx chipset not correctly identified by Blackmagic Probe.
 Checkout this commit, as it's the latest that supports the LPC17xx chipset correctly.
 ```
 Firmware found: LPC17xx
@@ -19,33 +27,3 @@ Firmware found: Nordic nRF51 (might be missing stuff behind the name later on No
 302ff20a6d5b806c09e0ca7e996beab3ef3596f4
 ```
 
-#### Remove any other installed platformIO or openOCD installation
-```
-brew remove platformio open-ocd
-```
-
-#### Python Module 'intelhex' not found
-```
-cd
-./.platformio/penv/bin/pip3 install intelhex
-```
-
-#### Error: registers may not be the same -- `strexb r0,r0,[r1]' `strexh r0,r0,[r1]'
-
-Use this patch: [click me](https://gist.github.com/timbrom/1942280)
-
-
-### Mbed Blinky example code
-```c++
-#include "mbed.h"
- 
-DigitalOut led1(LED1);
- 
-// main() runs in its own thread in the OS
-int main() {
-    while (true) {
-        led1 = !led1;
-        wait(0.5);
-    }
-}
-```
