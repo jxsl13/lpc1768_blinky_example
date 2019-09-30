@@ -27,3 +27,10 @@ Firmware found: Nordic nRF51 (might be missing stuff behind the name later on No
 302ff20a6d5b806c09e0ca7e996beab3ef3596f4
 ```
 
+
+### TODO:
+
+ - It makes more sense to choose targets that are Boards and not actually the microcontrollers that are installed on the boards.
+ - As one would need to configure the Arduino Board and the myAVR Board MK2 differently, even tho both have the same microcontroller.
+ - FIX LPC1768 Keil board upload.
+
