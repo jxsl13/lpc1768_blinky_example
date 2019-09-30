@@ -4,13 +4,15 @@
 extern "C" {
 #endif
 
+
+#if defined LPC1768
+
 void delay_ms(unsigned int ms)
 {
 volatile unsigned int i,j;
 for(i=0;i<ms;i++)
 for(j=0;j<10000;j++);
 }
-
 
 /* start the main program */
 int main() 
@@ -34,6 +36,26 @@ int main()
         //delay_ms(1000);
     }
 }
+#elif defined ATMEGA328P
+
+
+int main(void)
+{
+    // make the LED pin an output for PORTB5
+    DDRB = 1 << DDB5;       // DDB5 = 5
+
+    while (1)
+    {
+        _delay_ms(200);
+
+        // toggle the LED
+        PORTB ^= 1 << PB5;  // PB5 = 5
+    }
+
+    return 0;
+}
+
+#endif // Different Mains
 
 
 #ifdef __cplusplus
