@@ -1,11 +1,13 @@
-#### Atmega328p-pu  
+## myAVR Board MK2 2.20
+
+#### Atmega328P  
 `avr-gcc` supports the Atmel microcontrollers.
 A good portion of ASF (sadly too many modifications needed)   
 can be used to develop easier for the ATmega328p
 
 
 
-#### Example Blinky(Arduino Uno)
+#### Example Blinky
 ```C++
 #include <avr/io.h>
 #include <util/delay.h>
@@ -26,3 +28,5 @@ int main(void)
     return 0;
 }
 ```
+
+![How to wire the board properly](./../../../images/myAVR_Board_MK2_V2.20_WIRING_BLINKY.jpg)

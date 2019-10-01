@@ -5,7 +5,7 @@ extern "C" {
 #endif
 
 
-#if defined LPC1768
+#if defined MCB1760
 
 void delay_ms(unsigned int ms)
 {
@@ -32,7 +32,7 @@ int main(void)
     }
 }
 
-#elif defined ATMEGA328P
+#elif defined ARDUINO_UNO || defined MYAVR_BOARD_MK2
 
 
 int main(void)

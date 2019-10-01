@@ -1,13 +1,14 @@
 ### This is a multi target abstraction of an interrupt configuration.
 
 #### Current boards:
- - Keil MCB1760 (LPC1768 ARM Cortex M-3 Microcontroller)
- - myAVR Board MK2 V2.20(ATmega328p microcontroller)
- - Arduino UNO(ATmega328p microcontroller)
+ - Keil MCB1760 (NXP LPC1768 ARM Cortex M-3 Microcontroller)
+ - myAVR Board MK2 V2.20(ATmega328P-PU microcontroller)
+ - Arduino UNO(ATmega328P microcontroller)
 
 #### Target specific READMEs
- - `src/target/LPC1768/README.md`
- - `src/target/ATMEGA328P/README.md`
+ - `src/target/MCB1760/README.md`
+ - `src/target/MYAVR_BOARD_MK2/README.md`
+ - `src/target/ARDUINO_UNO/README.md`
 
 ### Troubleshooting  
 
@@ -28,9 +29,5 @@ Firmware found: Nordic nRF51 (might be missing stuff behind the name later on No
 ```
 
 
-### TODO:
 
- - It makes more sense to choose targets that are Boards and not actually the microcontrollers that are installed on the boards.
- - As one would need to configure the Arduino Board and the myAVR Board MK2 differently, even tho both have the same microcontroller.
- - FIX LPC1768 Keil board upload.
 

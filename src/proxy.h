@@ -1,11 +1,13 @@
 #pragma once // include this header only once
 
-#if defined LPC1768
-#include <target/LPC17xx/LPC17xx.h>
+#if defined MCB1760
+#include <target/MCB1760/LPC17xx.h>
+#pragma message("LPC")
 
-#elif defined ATMEGA328P
+#elif  defined ARDUINO_UNO \
+    || defined MYAVR_BOARD_MK2
 
-#define BOARD ATMEGA328P_XPLAINED_MINI
+#pragma message("NOT LPC")
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
