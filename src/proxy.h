@@ -12,4 +12,7 @@
 #include <util/delay.h>
 #include <avr/interrupt.h>
 
+#elif defined STM32F407G
+#include <target/STM32F407G/stm32f4xx.h>
+
 #endif // include platform specific headers.
