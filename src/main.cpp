@@ -51,7 +51,7 @@ int main(void)
     return 0;
 }
 
-#elif defined STM32F407G
+#elif defined STM32F407VG
 
 #define LEDPORT (GPIOD)
 #define LED1 (12)
