@@ -69,7 +69,6 @@ void ms_delay(int ms)
    }
 }
 
-//Alternates blue and green LEDs quickly
 int main(void)
 {
 	ENABLE_GPIO_CLOCK; 		 			// enable the clock to GPIO
