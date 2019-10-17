@@ -29,7 +29,6 @@ int main(void)
 
         LPC_GPIO2->FIOPIN = 0xffffffff;     // Make all the Port pins as high  
         delay_ms(1000);  
-        #pragma warning("lpc main")
     }
 }
 
@@ -54,7 +53,6 @@ int main(void)
 
 #elif defined STM32F407VG
 
-#pragma warning("STM32")
 #define LEDPORT (GPIOD)
 #define LED1 (12)
 #define ENABLE_GPIO_CLOCK (RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN)
