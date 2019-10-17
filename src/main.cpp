@@ -19,7 +19,7 @@ void delay_ms(unsigned int ms)
 int main(void) 
 {
     SystemInit();                    //Clock and PLL configuration 
-    LPC_PINCON->PINSEL4 = 0x00000000;//Configure the PORT2 Pins as GPIO;
+    LPC_PINCON->PINSEL4 = 0x000000;//Configure the PORT2 Pins as GPIO;
     LPC_GPIO2->FIODIR = 0xffffffff;  //Configure the PORT2 pins as OUTPUT;
 
     while(1)
@@ -29,6 +29,7 @@ int main(void)
 
         LPC_GPIO2->FIOPIN = 0xffffffff;     // Make all the Port pins as high  
         delay_ms(1000);  
+        #pragma warning("lpc main")
     }
 }
 
@@ -53,10 +54,10 @@ int main(void)
 
 #elif defined STM32F407VG
 
+#pragma warning("STM32")
 #define LEDPORT (GPIOD)
 #define LED1 (12)
 #define ENABLE_GPIO_CLOCK (RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN)
-#define _MODER    MODER
 #define GPIOMODER (GPIO_MODER_MODER12_0)
 
 
@@ -72,7 +73,7 @@ void ms_delay(int ms)
 int main(void)
 {
 	ENABLE_GPIO_CLOCK; 		 			// enable the clock to GPIO
-	LEDPORT->_MODER |= GPIOMODER;		// set pins to be general purpose output
+	LEDPORT->MODER |= GPIOMODER;		// set pins to be general purpose output
 	for (;;) {
 		ms_delay(500);
 		LEDPORT->ODR ^= (1<<LED1); 		// toggle diodes

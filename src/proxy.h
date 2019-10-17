@@ -5,7 +5,6 @@
 
 #elif  defined ARDUINO_UNO \
     || defined MYAVR_BOARD_MK2
-
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
