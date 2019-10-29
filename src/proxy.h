@@ -2,6 +2,7 @@
 
 #if defined MCB1760
 #include <target/MCB1760/LPC17xx.h>
+#include <target/MCB1760/Pins.h>
 
 #elif  defined ARDUINO_UNO \
     || defined MYAVR_BOARD_MK2
