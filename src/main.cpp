@@ -77,10 +77,12 @@ int main(void)
     SystemInit();                    //Clock and PLL configuration 
     InterruptHandler& IRQHandler = InterruptHandler::GetInstance();
     (void)IRQHandler;
-    __WFI();
     InitPower();
     InitLED();
     InitPushButton();
+
+    __WFI(); // wait for interrupt
+    ToggleLED();
 
     //
 
