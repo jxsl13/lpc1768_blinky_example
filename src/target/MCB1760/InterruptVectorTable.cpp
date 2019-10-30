@@ -1,5 +1,7 @@
 #include "LPC17xx.h"
-#include <hal/InterruptHandler.h>
+#include <hal/InterruptVectorTable.h>
+#include <cstring>
+
 /* externals from startup_ARMCM3.s */
 extern uint32_t __Vectors[];              /* vector table ROM  */
  
@@ -7,7 +9,7 @@ extern uint32_t __Vectors[];              /* vector table ROM  */
 #define VECTORTABLE_ALIGNMENT   (0x100ul) /* 16 Cortex + 32 ARMCM3 = 48 words */
                                           /* next power of 2 = 256            */
 
-enum InterruptHandler::InterruptTypes : uint32_t {
+enum InterruptVectorTable::InterruptTypes : uint32_t {
     NonMaskableInt_IRQn = 0,    /*!< 2 Non Maskable Interrupt                         */
     MemoryManagement_IRQn,      /*!< 4 Cortex-M3 Memory Management Interrupt          */
     BusFault_IRQn,              /*!< 5 Cortex-M3 Bus Fault Interrupt                  */
@@ -55,22 +57,37 @@ enum InterruptHandler::InterruptTypes : uint32_t {
     CANActivity_IRQn            /*!< CAN Activity Interrupt(For wakeup only)          */
 } InterruptTypes;
  
-InterruptHandler::InterruptHandler()
+InterruptVectorTable::InterruptVectorTable()
 {
     m_VectorTable.reserve(VECTORTABLE_SIZE);
 
     uint32_t *vectors = (uint32_t *)SCB->VTOR;
 
-    for (uint32_t i = 0; i < VECTORTABLE_SIZE; i++) 
-    {
-        m_VectorTable[i] = vectors[i];            /* copy vector table to RAM */
-    }
+    // copy vector table to ram location
+    std::memcpy(m_VectorTable.data(), vectors, sizeof(uint32_t) * VECTORTABLE_SIZE);
+
 
     /* relocate vector table into RAM*/ 
+    // disable global interrupts
     __disable_irq();
 
+    // change vectortable location
     SCB->VTOR = (uint32_t) m_VectorTable.data();
     
+    // wait for memory operations to finish
     __DSB();
+
+    // enable interrupts again.
     __enable_irq();
+}
+
+bool InterruptVectorTable::RegisterInterruptVectorTable(uint32_t index, void (*Callback)(void))
+{   
+    // It is not possuble to unwrap a std::function in order to extract the function pointer
+    if (index < 0 || index >= VECTORTABLE_SIZE)
+        return false;
+    
+    m_VectorTable[index] = reinterpret_cast<uint32_t>(Callback); 
+
+    return true;
 }

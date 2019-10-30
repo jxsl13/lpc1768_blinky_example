@@ -3,27 +3,26 @@
 #include <functional>
 #include <vector>
 
-
-class InterruptHandler
+class InterruptVectorTable
 {
     // https://stackoverflow.com/questions/1008019/c-singleton-design-pattern
     public:
         enum InterruptTypes : uint32_t; // forward declaration of enums with type/size specification.
 
-        static InterruptHandler& GetInstance()
+        static InterruptVectorTable& GetInstance()
         {
-            static InterruptHandler instance;   // Guaranteed to be destroyed.
+            static InterruptVectorTable instance;   // Guaranteed to be destroyed.
                                                 // Instantiated on first use.
             return instance;
         }
     private:
-        std::vector<uint32_t> m_VectorTable;
+        static std::vector<uint32_t> m_VectorTable;
 
-        InterruptHandler();
+        InterruptVectorTable();
 
     public:
-        InterruptHandler(InterruptHandler const&)   = delete;
-        void operator=(InterruptHandler const&)     = delete;
+        InterruptVectorTable(InterruptVectorTable const&)   = delete;
+        void operator=(InterruptVectorTable const&)         = delete;
 
         /**
          * @brief 
@@ -33,8 +32,10 @@ class InterruptHandler
          * @return true If the registration succeeded
          * @return false If the registration was not successful, due to e.g. an invalid index
          */
-        bool RegisterInterruptHandler(InterruptTypes index, std::function<void(void)> Callback);
+        bool RegisterInterruptCallback(uint32_t index, void (*Callback)(void));
 
+
+        //void FireSoftwareInterrupt(uint32_t index);
 };
 
 
