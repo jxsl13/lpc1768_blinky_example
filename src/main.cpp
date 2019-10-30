@@ -1,7 +1,9 @@
-#include "proxy.h"
-#include "hal/InterruptHandler.h"
+#include "hal/InterruptVectorTable.hpp"
+#include "proxy.hpp"
+
 
 #include <cstring>
+#include <array>
 
 #ifdef __cplusplus
 extern "C" {
@@ -79,16 +81,13 @@ void NVIC_SetVectorTable(unsigned long NVIC_VectTab, unsigned long Offset)
 }
 
 
-/**
- * UM10360 Manual
- * 6.4 Vector table remapping
- * The vector table should be located on a 256 word (1024 byte) boundary 
- * to insure alignment on LPC176x/5x family devices.
- * 
- * 0x400 = 1024 (byte)
- */
-constexpr uint32_t VECTORTABLE_SIZE = 256;
 
+constexpr uint32_t VECTORTABLE_SIZE = 32;
+
+/**
+ * @brief Aligment is in bytes!
+ * 
+ */
 alignas(VECTORTABLE_SIZE * sizeof(uint32_t)) static std::array<uint32_t, VECTORTABLE_SIZE> g_VectorTable;
 
 void InitRAMInterruptVectorTable()
@@ -114,11 +113,7 @@ void InitRAMInterruptVectorTable()
     __enable_irq();
 }
 
-void GEINT0_IRQHandler(void)
-{
-    ClearInterruptFlagEINTX(SBIT_EINT0); /* Clear Interrupt Flag */
-    ToggleLED();
-}
+
 
 
 void PushButton_Handler()
@@ -132,9 +127,11 @@ void InitEINT0()
     LPC_SC->EXTINT      = (1<<SBIT_EINT0);	    /* Clear Pending interrupts */
     LPC_SC->EXTMODE     = (1<<SBIT_EXTMODE0);   /* Configure EINTx as Edge Triggered*/
     LPC_SC->EXTPOLAR    = (1<<SBIT_EXTPOLAR0);  /* Configure EINTx as Falling Edge */
+}
 
-
-    // EINT0 = 18
+void EnableEINT0()
+{
+     // EINT0 = 18
     NVIC_SetVector((IRQn)(18), (uint32_t)PushButton_Handler); // TODO: get this to work
     
     NVIC_EnableIRQ((IRQn_Type)(18));    /* Enable the EINT0 interrupt */
@@ -144,16 +141,18 @@ void InitEINT0()
 int main()
 {   
     SystemInit();
-    InitRAMInterruptVectorTable();
 
-    //auto& handler =  InterruptHandler::GetInstance();
+    //InitRAMInterruptVectorTable();// move vector table to ram
+    //InitEINT0();                // init eint0
+    //EnableEINT0();              // enable interrupt
 
-    //handler.RegisterInterruptHandler(0x88, PushButton_Handler);
+    auto& VT = InterruptVectorTable<uint32_t, 256>::getInstance();
+
+    VT.RegisterInterruptCallback(18, PushButton_Handler);
 
     InitPower();
     InitPushButton();
     InitLED();
-    InitEINT0();
 
 
 

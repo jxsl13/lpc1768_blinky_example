@@ -1,15 +1,12 @@
 #include "LPC17xx.h"
-#include <hal/InterruptVectorTable.h>
+#include <hal/InterruptVectorTable.hpp>
 #include <cstring>
 
-/* externals from startup_ARMCM3.s */
-extern uint32_t __Vectors[];              /* vector table ROM  */
  
-#define VECTORTABLE_SIZE        (256)     /* size Cortex-M3 vector table      */
-#define VECTORTABLE_ALIGNMENT   (0x100ul) /* 16 Cortex + 32 ARMCM3 = 48 words */
-                                          /* next power of 2 = 256            */
 
-enum InterruptVectorTable::InterruptTypes : uint32_t {
+
+template <typename Value, Value Vectors>
+enum InterruptVectorTable<Value, Vectors>::InterruptTypes : Value {
     NonMaskableInt_IRQn = 0,    /*!< 2 Non Maskable Interrupt                         */
     MemoryManagement_IRQn,      /*!< 4 Cortex-M3 Memory Management Interrupt          */
     BusFault_IRQn,              /*!< 5 Cortex-M3 Bus Fault Interrupt                  */
@@ -55,24 +52,48 @@ enum InterruptVectorTable::InterruptTypes : uint32_t {
     PLL1_IRQn,                  /*!< PLL1 Lock (USB PLL) Interrupt                    */
     USBActivity_IRQn,           /*!< USB Activity Interrupt(For wakeup only)          */
     CANActivity_IRQn            /*!< CAN Activity Interrupt(For wakeup only)          */
-} InterruptTypes;
- 
-InterruptVectorTable::InterruptVectorTable()
-{
-    m_VectorTable.reserve(VECTORTABLE_SIZE);
+};
 
-    uint32_t *vectors = (uint32_t *)SCB->VTOR;
+
+template <typename Value, Value Vectors>
+InterruptVectorTable<Value, Vectors>::InterruptVectorTable()
+{
+
+    Value *vectors = (Value *)SCB->VTOR;
 
     // copy vector table to ram location
-    std::memcpy(m_VectorTable.data(), vectors, sizeof(uint32_t) * VECTORTABLE_SIZE);
+    std::memcpy(m_VectorTable.data(), vectors, sizeof(Value) * Vectors);
 
 
     /* relocate vector table into RAM*/ 
     // disable global interrupts
     __disable_irq();
 
-    // change vectortable location
-    SCB->VTOR = (uint32_t) m_VectorTable.data();
+    /* 
+        VTOR bit assignment
+        ===================
+        [31:30] - Reserved
+        [29:8] - TBLOFF
+                Vector table base offset field. It contains bits[29:8] of the offset of the table base from the bottom of the memory map.
+                
+                Remark: Bit[29] determines whether the vector table is in the code or SRAM memory region:
+                Bit[29] is sometimes called the TBLBASE bit. 
+                • 0=code
+                • 1=SRAM. 
+        [7:0] - Reserved
+        
+    */
+
+   /**
+     * https://community.arm.com/developer/tools-software/tools/f/keil-forum/39482/how-to-relocate-the-cortex-m3-vector-table
+     * 0x1FFFFF80 = 1111111111111111111111100000000
+     */
+
+    // given // SCB->VTOR = NVIC_VectTab | (Offset & (unsigned int)0x1FFFFF80);
+    // fixed // SCB->VTOR |= ((Value) m_VectorTable.data() & (Value)0x7FFFFF00);
+
+    // original
+    SCB->VTOR = (Value) m_VectorTable.data() ;
     
     // wait for memory operations to finish
     __DSB();
@@ -81,13 +102,26 @@ InterruptVectorTable::InterruptVectorTable()
     __enable_irq();
 }
 
-bool InterruptVectorTable::RegisterInterruptVectorTable(uint32_t index, void (*Callback)(void))
+template <typename Value, Value Vectors>
+bool InterruptVectorTable<Value, Vectors>::RegisterInterruptCallback(Value index, void (*Callback)(void))
 {   
     // It is not possuble to unwrap a std::function in order to extract the function pointer
-    if (index < 0 || index >= VECTORTABLE_SIZE)
+    if (index < 0 || index >= Vectors)
         return false;
     
-    m_VectorTable[index] = reinterpret_cast<uint32_t>(Callback); 
+    m_VectorTable[index] = reinterpret_cast<Value>(Callback); 
 
     return true;
+}
+
+template <typename Value, Value Vectors>
+void InterruptVectorTable<Value, Vectors>::EnableInterrupt(Value index)
+{
+    NVIC_EnableIRQ(static_cast<IRQn_Type>(index));
+}
+
+template <typename Value, Value Vectors>
+void InterruptVectorTable<Value, Vectors>::DisableInterrupt(Value index)
+{
+    NVIC_DisableIRQ(static_cast<IRQn_Type>(index));
 }
