@@ -82,11 +82,11 @@ void NVIC_SetVectorTable(unsigned long NVIC_VectTab, unsigned long Offset)
 
 
 
-constexpr uint32_t VECTORTABLE_SIZE = 32;
+constexpr uint32_t VECTORTABLE_SIZE = 256;
 
 /**
  * @brief Aligment is in bytes!
- * 
+ *  Global static vector table variable
  */
 alignas(VECTORTABLE_SIZE * sizeof(uint32_t)) static std::array<uint32_t, VECTORTABLE_SIZE> g_VectorTable;
 
@@ -115,11 +115,10 @@ void InitRAMInterruptVectorTable()
 
 
 
-
 void PushButton_Handler()
 {
     ClearInterruptFlagEINTX(0);
-    ToggleLED();    
+    ToggleLED(); 
 }
 
 void InitEINT0()
@@ -129,12 +128,28 @@ void InitEINT0()
     LPC_SC->EXTPOLAR    = (1<<SBIT_EXTPOLAR0);  /* Configure EINTx as Falling Edge */
 }
 
+void BindEINT0Handler()
+{
+    NVIC_SetVector((IRQn)(18), (uint32_t)PushButton_Handler); // TODO: get this to work
+}
+
 void EnableEINT0()
 {
      // EINT0 = 18
-    NVIC_SetVector((IRQn)(18), (uint32_t)PushButton_Handler); // TODO: get this to work
-    
     NVIC_EnableIRQ((IRQn_Type)(18));    /* Enable the EINT0 interrupt */
+}
+
+void FireInterrupt(uint32_t index)
+{
+    if (index < 0 || index > 111)
+        return;
+    
+    /**
+     * Bits 8:0 - 256 Interrupt values
+     * Values of bits 31:9 are reserved, so should not be read or touched
+     * Manual UM10360 - Page 92
+     */
+    NVIC->STIR |= (0xFF & index);
 }
 
 
@@ -142,25 +157,45 @@ int main()
 {   
     SystemInit();
 
-    //InitRAMInterruptVectorTable();// move vector table to ram
-    //InitEINT0();                // init eint0
-    //EnableEINT0();              // enable interrupt
+    InitPower();        // explicitly enable power
+    InitPushButton();   // configure pushbutton to trigger the EINT0 interrupt
+    InitLED();          // configure LED's GPIO pin to be an output & set its value to LOW
 
-    auto& VT = InterruptVectorTable<uint32_t, 256>::getInstance();
-
-    VT.RegisterInterruptCallback(18, PushButton_Handler);
-
-    InitPower();
-    InitPushButton();
-    InitLED();
-
-
-
-
-    while(1)
+    // switch between the encapsulated and non encapsulated variants
+    constexpr bool useEncapsulated = true;
+    if(useEncapsulated)
     {
-        // Do nothing
-    }      
+        InitEINT0();                                                // init eint0
+        auto& vectorTable = InterruptVectorTable::getInstance();    // move vector table into singleton/RAM/ aligned memory block
+
+        // tell the controller to use the PushButton_Handler when the interrupt 18 = EINT0 is triggered
+        vectorTable.RegisterInterruptCallback(18, PushButton_Handler);
+
+        // allow the EINT0 inrettupt to be triggered
+        vectorTable.EnableInterrupt(18);
+
+
+        while(1)
+        {
+            // trigger interrupt via software (easier testing, less configuration of buttons etc.)
+            vectorTable.FireSoftwareInterrupt(18);
+            delay_ms(1000);
+        }   
+    }
+    else
+    {
+        InitRAMInterruptVectorTable();  // move vector table to ram
+        InitEINT0();                    // init eint0
+        BindEINT0Handler();             // make EINT0 execute PushButtonHandler on interrupt
+        EnableEINT0();                  // enable interrupt and bind to handler
+
+        while (1)
+        {
+            FireInterrupt(18);
+            delay_ms(500);
+        }
+        
+    }   
 }
 
 #elif defined ARDUINO_UNO || defined MYAVR_BOARD_MK2

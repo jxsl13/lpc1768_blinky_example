@@ -2,11 +2,8 @@
 #include <hal/InterruptVectorTable.hpp>
 #include <cstring>
 
- 
 
-
-template <typename Value, Value Vectors>
-enum InterruptVectorTable<Value, Vectors>::InterruptTypes : Value {
+enum InterruptVectorTable::InterruptTypes : ValueType {
     NonMaskableInt_IRQn = 0,    /*!< 2 Non Maskable Interrupt                         */
     MemoryManagement_IRQn,      /*!< 4 Cortex-M3 Memory Management Interrupt          */
     BusFault_IRQn,              /*!< 5 Cortex-M3 Bus Fault Interrupt                  */
@@ -55,14 +52,13 @@ enum InterruptVectorTable<Value, Vectors>::InterruptTypes : Value {
 };
 
 
-template <typename Value, Value Vectors>
-InterruptVectorTable<Value, Vectors>::InterruptVectorTable()
+InterruptVectorTable::InterruptVectorTable()
 {
 
-    Value *vectors = (Value *)SCB->VTOR;
+    ValueType *vectors = (ValueType *)SCB->VTOR;
 
     // copy vector table to ram location
-    std::memcpy(m_VectorTable.data(), vectors, sizeof(Value) * Vectors);
+    std::memcpy(s_VectorTable.data(), vectors, sizeof(ValueType) * VectorsCount);
 
 
     /* relocate vector table into RAM*/ 
@@ -84,16 +80,10 @@ InterruptVectorTable<Value, Vectors>::InterruptVectorTable()
         
     */
 
-   /**
-     * https://community.arm.com/developer/tools-software/tools/f/keil-forum/39482/how-to-relocate-the-cortex-m3-vector-table
-     * 0x1FFFFF80 = 1111111111111111111111100000000
+    /**
+     * @brief Mask only the TBLOFF part, don't touch the rest.
      */
-
-    // given // SCB->VTOR = NVIC_VectTab | (Offset & (unsigned int)0x1FFFFF80);
-    // fixed // SCB->VTOR |= ((Value) m_VectorTable.data() & (Value)0x7FFFFF00);
-
-    // original
-    SCB->VTOR = (Value) m_VectorTable.data() ;
+    SCB->VTOR |= (ValueType) s_VectorTable.data() & 0x3FFFFF00;
     
     // wait for memory operations to finish
     __DSB();
@@ -102,26 +92,52 @@ InterruptVectorTable<Value, Vectors>::InterruptVectorTable()
     __enable_irq();
 }
 
-template <typename Value, Value Vectors>
-bool InterruptVectorTable<Value, Vectors>::RegisterInterruptCallback(Value index, void (*Callback)(void))
+bool InterruptVectorTable::RegisterInterruptCallback(ValueType InterruptIndex, void (*Callback)(void))
 {   
-    // It is not possuble to unwrap a std::function in order to extract the function pointer
-    if (index < 0 || index >= Vectors)
+    /**
+     * 
+     * It is not possible to unwrap a std::function in order to extract the function pointer! 
+     * Thus one can only use the raw C function pointer
+     * 
+     * LPC allows a range of [0:111] as InterruptIndex
+     */
+    if (InterruptIndex < 0 || InterruptIndex >= 111)
         return false;
     
-    m_VectorTable[index] = reinterpret_cast<Value>(Callback); 
+    s_VectorTable[InterruptIndex + NVIC_USER_IRQ_OFFSET] = reinterpret_cast<ValueType>(Callback);
+    
+    /**
+     * same as:
+     * 
+     * NVIC_SetVector((IRQn)(InterruptIndex), (ValueType)Callback);
+     */
 
     return true;
 }
 
-template <typename Value, Value Vectors>
-void InterruptVectorTable<Value, Vectors>::EnableInterrupt(Value index)
+void InterruptVectorTable::EnableInterrupt(ValueType InterruptIndex)
 {
-    NVIC_EnableIRQ(static_cast<IRQn_Type>(index));
+    NVIC_EnableIRQ(static_cast<IRQn_Type>(InterruptIndex));
 }
 
-template <typename Value, Value Vectors>
-void InterruptVectorTable<Value, Vectors>::DisableInterrupt(Value index)
+void InterruptVectorTable::DisableInterrupt(ValueType InterruptIndex)
 {
-    NVIC_DisableIRQ(static_cast<IRQn_Type>(index));
+    NVIC_DisableIRQ(static_cast<IRQn_Type>(InterruptIndex));
 }
+
+void InterruptVectorTable::FireSoftwareInterrupt(ValueType InterruptIndex)
+{
+    /**
+     * LPC allows a range of [0:111] as InterruptIndex
+     */
+    if (InterruptIndex < 0 || InterruptIndex > 111)
+        return;
+    
+    /**
+     * Bits 8:0 - 256 Interrupt values
+     * Values of bits 31:9 are reserved, so should not be read or touched
+     * Manual UM10360 - Page 92
+     */
+    NVIC->STIR |= (0xFF & InterruptIndex);
+}
+

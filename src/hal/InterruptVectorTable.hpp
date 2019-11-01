@@ -2,7 +2,10 @@
 
 #include <array>
 
-template<typename Value = uint32_t, Value Vectors = 256>
+using ValueType = uint32_t;
+constexpr ValueType VectorsCount = 256;
+
+
 class InterruptVectorTable
 {
     /**
@@ -25,12 +28,18 @@ class InterruptVectorTable
          * 
          * 0x100 = 256 * sizeof(uint32_t) = 0x400 = 1024 byte
          * Cortex M3 requires this to be aligned properly.
+         * 
+         * Since C++17 a static member variables may be defined with the inline keyword directly
+         * in the header file: inline static m_Whatever
+         * https://stackoverflow.com/questions/185844/how-to-initialize-private-static-members-in-c
+         * 
+         * The inline part allows for this to be compiled only once! and not in every .cpp file this might be included in.
          */
-        alignas(Vectors * sizeof(Value)) static std::array<Value, Vectors> m_VectorTable;
+        alignas(VectorsCount * sizeof(ValueType)) inline static std::array<ValueType, VectorsCount> s_VectorTable;
 
 
     public:
-        enum InterruptTypes : Value; // forward declaration of enums with type/size specification.
+        enum InterruptTypes : ValueType; // forward declaration of enums with type/size specification.
 
         /**
          * @brief Deleted copy constructor
@@ -50,7 +59,7 @@ class InterruptVectorTable
         static InterruptVectorTable& getInstance()
         {
             static InterruptVectorTable instance;   // Guaranteed to be destroyed.
-                                                // Instantiated on first use.
+                                                    // Instantiated on first use.
             return instance;
         }
 
@@ -64,23 +73,24 @@ class InterruptVectorTable
          * @param index 
          * @param Callback Function to be called, when the Interrupt is 
          */
-        bool RegisterInterruptCallback(Value index, void (*Callback)(void));
+        bool RegisterInterruptCallback(ValueType index, void (*Callback)(void));
 
         /**
          * @brief Disable interrupt at given index
          * 
          * @param index interrupt index, as defined in the manuals: >= 0
          */
-        void EnableInterrupt(Value index);
+        void EnableInterrupt(ValueType index);
 
         /**
          * @brief Disable an interrupt.
          * 
          * @param index Is the index of the interrupt within the interrupt vctor table. 
-         *              Should be a value greater than or equal to 0.
+         *              Should be a ValueType greater than or equal to 0.
          */
-        void DisableInterrupt(Value index);
+        void DisableInterrupt(ValueType index);
 
 
-        //void FireSoftwareInterrupt(uint32_t index);
+        void FireSoftwareInterrupt(ValueType index);
 };
+
