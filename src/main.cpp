@@ -12,13 +12,6 @@ extern "C" {
 
 #if defined MCB1760
 
-
-#define PINSEL_EINT0    20
-#define LED1            28   
-#define SBIT_EINT0      0
-#define SBIT_EXTMODE0   0
-#define SBIT_EXTPOLAR0  0
-
 void delay_ms(unsigned int ms)
 {
     volatile unsigned int i,j;
@@ -26,10 +19,29 @@ void delay_ms(unsigned int ms)
     for(j=0;j<6000;j++);
 }
 
+void InitPower()
+{
+    LPC_SC->PCONP |= (1 << 15);             // Enable power
+}
+
+void InitLED()
+{
+    LPC_PINCON->PINSEL3 &=   ~(0 << 25) | ~(0 << 24);       // LED connected to P1.28 is in GPIO mode (see Table 83)
+    LPC_GPIO1->FIODIR   =                   (1<< 28);       // Configure LED pins as OUTPUT - P1.28*/
+    LPC_GPIO1->FIOCLR   |=                 (1 << 28);       // set P1.28 to LOW
+}
+
+void InitPushButton()
+{
+
+    LPC_PINCON->PINSEL4     =     (1<<20);      // Configure P2_10, as EINT0 (see data sheet of PINSEL4)
+    LPC_GPIO2->FIODIR       &= ~(0 << 10);      // P2.10 is an input pin
+    LPC_GPIOINT->IO2IntEnF  |=  (1 << 10);      // P2.10 reads the falling edges to generate an interrupt
+}
 
 void ToggleLED()
 {
-#define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
+    #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 
     // check if bit is set, then toggle it depending on result.
     if(CHECK_BIT(LPC_GPIO1->FIOPIN, 28))
@@ -44,54 +56,24 @@ void ToggleLED()
 
 inline void ClearInterruptFlagEINTX(uint32_t X)
 {
-    /* Clear Interrupt Flag */
-    LPC_SC->EXTINT |= (1<<X);  
+    LPC_SC->EXTINT |= (1<<X);      // Clear Interrupt Flag
 }
 
-
-void InitPower()
+void PushButton_Handler()
 {
-    LPC_SC->PCONP |= (1 << 15);             // Enable power
+    ClearInterruptFlagEINTX(0);
+    ToggleLED(); 
 }
-
-void InitLED()
-{
-    LPC_PINCON->PINSEL3 &= ~(0 << 25) | ~(0 << 24);   // LED connected to P1.28 is in GPIO mode (see Table 83)
-    LPC_GPIO1->FIODIR   = (1<< 28);                   // Configure LED pins as OUTPUT - P1.28*/
-
-    LPC_GPIO1->FIOCLR |= (1 << 28); // set P1.28 to LOW
-}
-
-void InitPushButton()
-{
-
-    LPC_PINCON->PINSEL4 = (1<<PINSEL_EINT0);   /* Configure P2_10, as EINT0 */
-    LPC_GPIO2->FIODIR   &= ~(0 << 10);      // P2.10 is an input pin
-    LPC_GPIOINT->IO2IntEnF |=  (1 << 10);   // P2.10 reads the falling edges to generate an interrupt
-
-}
-
-
-void NVIC_SetVectorTable(unsigned long NVIC_VectTab, unsigned long Offset)
-{
-    /**
-     * https://community.arm.com/developer/tools-software/tools/f/keil-forum/39482/how-to-relocate-the-cortex-m3-vector-table
-     */
-    SCB->VTOR = NVIC_VectTab | (Offset & (unsigned int)0x1FFFFF80);
-}
-
-
-
-constexpr uint32_t VECTORTABLE_SIZE = 256;
-
-/**
- * @brief Aligment is in bytes!
- *  Global static vector table variable
- */
-alignas(VECTORTABLE_SIZE * sizeof(uint32_t)) static std::array<uint32_t, VECTORTABLE_SIZE> g_VectorTable;
 
 void InitRAMInterruptVectorTable()
 {
+    constexpr uint32_t VECTORTABLE_SIZE = 256;
+
+    /**
+     * @brief Aligment is in bytes!
+     *  Global static vector table variable
+    */
+    alignas(VECTORTABLE_SIZE * sizeof(uint32_t)) static std::array<uint32_t, VECTORTABLE_SIZE> g_VectorTable;
 
     uint32_t *vectors = (uint32_t *)SCB->VTOR;
 
@@ -113,19 +95,11 @@ void InitRAMInterruptVectorTable()
     __enable_irq();
 }
 
-
-
-void PushButton_Handler()
-{
-    ClearInterruptFlagEINTX(0);
-    ToggleLED(); 
-}
-
 void InitEINT0()
 {
-    LPC_SC->EXTINT      = (1<<SBIT_EINT0);	    /* Clear Pending interrupts */
-    LPC_SC->EXTMODE     = (1<<SBIT_EXTMODE0);   /* Configure EINTx as Edge Triggered*/
-    LPC_SC->EXTPOLAR    = (1<<SBIT_EXTPOLAR0);  /* Configure EINTx as Falling Edge */
+    LPC_SC->EXTINT      = (1<<0);	    // Clear Pending interrupts
+    LPC_SC->EXTMODE     = (1<<0);       // Configure EINTx as Edge Triggered
+    LPC_SC->EXTPOLAR    = (1<<0);       // Configure EINTx as Falling Edge
 }
 
 void BindEINT0Handler()
@@ -135,13 +109,13 @@ void BindEINT0Handler()
 
 void EnableEINT0()
 {
-     // EINT0 = 18
+    // EINT0 = 18
     NVIC_EnableIRQ((IRQn_Type)(18));    /* Enable the EINT0 interrupt */
 }
 
-void FireInterrupt(uint32_t index)
+void FireInterrupt(uint32_t InterruptIndex)
 {
-    if (index < 0 || index > 111)
+    if (InterruptIndex < 0 || InterruptIndex > 111)
         return;
     
     /**
@@ -149,13 +123,12 @@ void FireInterrupt(uint32_t index)
      * Values of bits 31:9 are reserved, so should not be read or touched
      * Manual UM10360 - Page 92
      */
-    NVIC->STIR |= (0xFF & index);
+    NVIC->STIR |= (0xFF & InterruptIndex);
 }
-
 
 int main()
 {   
-    SystemInit();
+    SystemInit();       // startup board in a predefined state
 
     InitPower();        // explicitly enable power
     InitPushButton();   // configure pushbutton to trigger the EINT0 interrupt
@@ -194,7 +167,6 @@ int main()
             FireInterrupt(18);
             delay_ms(500);
         }
-        
     }   
 }
 
