@@ -1,7 +1,6 @@
 #include "hal/InterruptVectorTable.hpp"
 #include "proxy.hpp"
 
-
 #include <cstring>
 #include <array>
 
@@ -72,6 +71,8 @@ void InitRAMInterruptVectorTable()
     /**
      * @brief Aligment is in bytes!
      *  Global static vector table variable
+     * 
+     * compiler seems to align correctly in any case.
     */
     alignas(VECTORTABLE_SIZE * sizeof(uint32_t)) static std::array<uint32_t, VECTORTABLE_SIZE> g_VectorTable;
 
@@ -142,16 +143,15 @@ int main()
         auto& vectorTable = InterruptVectorTable::getInstance();    // move vector table into singleton/RAM/ aligned memory block
 
         // tell the controller to use the PushButton_Handler when the interrupt 18 = EINT0 is triggered
-        vectorTable.RegisterInterruptCallback(18, PushButton_Handler);
+        vectorTable.addCallback(18, PushButton_Handler);
 
         // allow the EINT0 inrettupt to be triggered
-        vectorTable.EnableInterrupt(18);
-
+        vectorTable.enableISR(18);
 
         while(1)
         {
             // trigger interrupt via software (easier testing, less configuration of buttons etc.)
-            vectorTable.FireSoftwareInterrupt(18);
+            vectorTable.triggerIRQ(18);
             delay_ms(1000);
         }   
     }
@@ -172,18 +172,34 @@ int main()
 
 #elif defined ARDUINO_UNO || defined MYAVR_BOARD_MK2
 
-
-int main(void)
+void InitLED()
 {
     // make the LED pin an output for PORTB5
+    // Port B, Bit 5-> B5
     DDRB = 1 << DDB5;       // DDB5 = 5
+}
 
+void ToggleLED()
+{
+    // toggle the LED
+    PORTB ^= 1 << PB5;  // PB5 = 5
+}
+
+static std::array<std::vector<std::reference_wrapper<uint8_t>>, 25> g_InterruptVectorTable;
+int main(void)
+{
+    uint8_t *vectors = (uint8_t *)0x0;
+
+   for (uint8_t i = 0; i < 25; i++)
+   {
+       g_InterruptVectorTable[i] = vectors[i];
+   }
+   
+   InitLED();
     while (1)
     {
         _delay_ms(200);
-
-        // toggle the LED
-        PORTB ^= 1 << PB5;  // PB5 = 5
+        ToggleLED();
     }
 
     return 0;

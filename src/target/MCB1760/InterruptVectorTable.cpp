@@ -54,45 +54,60 @@ enum InterruptVectorTable::InterruptTypes : ValueType {
 
 InterruptVectorTable::InterruptVectorTable()
 {
-
     ValueType *vectors = (ValueType *)SCB->VTOR;
 
-    // copy vector table to ram location
-    std::memcpy(s_VectorTable.data(), vectors, sizeof(ValueType) * VectorsCount);
+    /**
+     * @brief It is possible to manipulate the vector table without actually 
+     * Relocating it into RAM.
+     */
+    auto relocateIntoRam = [&](ValueType *VectorTable) -> void
+    {
+        // copy vector table to ram location
+        std::memcpy(s_VectorTable.data(), VectorTable, sizeof(ValueType) * VectorsCount); 
 
 
-    /* relocate vector table into RAM*/ 
-    // disable global interrupts
-    __disable_irq();
+        /* relocate vector table into RAM*/ 
+        // disable global interrupts
+        __disable_irq();
 
-    /* 
-        VTOR bit assignment
-        ===================
-        [31:30] - Reserved
-        [29:8] - TBLOFF
-                Vector table base offset field. It contains bits[29:8] of the offset of the table base from the bottom of the memory map.
-                
-                Remark: Bit[29] determines whether the vector table is in the code or SRAM memory region:
-                Bit[29] is sometimes called the TBLBASE bit. 
-                • 0=code
-                • 1=SRAM. 
-        [7:0] - Reserved
+        /* 
+            VTOR bit assignment
+            ===================
+            [31:30] - Reserved
+            [29:8] - TBLOFF
+                    Vector table base offset field. It contains bits[29:8] of the offset of the table base from the bottom of the memory map.
+                    
+                    Remark: Bit[29] determines whether the vector table is in the code or SRAM memory region:
+                    Bit[29] is sometimes called the TBLBASE bit. 
+                    • 0=code
+                    • 1=SRAM. 
+            [7:0] - Reserved
+            
+        */
+
+        /**
+         * @brief Mask only the TBLOFF part, don't touch the rest.
+         */
+        SCB->VTOR |= (ValueType) s_VectorTable.data() & 0x3FFFFF00;
         
-    */
+        // wait for memory operations to finish
+        __DSB();
+
+        // enable interrupts again.
+        __enable_irq();
+    };
+
+    relocateIntoRam(vectors);
 
     /**
-     * @brief Mask only the TBLOFF part, don't touch the rest.
+     * @brief Creates a view onto a specific memory region without
+     *          actually owning the region.
      */
-    SCB->VTOR |= (ValueType) s_VectorTable.data() & 0x3FFFFF00;
+    m_VectorTableView = {s_VectorTable.data(), s_VectorTable.size()};
     
-    // wait for memory operations to finish
-    __DSB();
-
-    // enable interrupts again.
-    __enable_irq();
 }
 
-bool InterruptVectorTable::RegisterInterruptCallback(ValueType InterruptIndex, void (*Callback)(void))
+bool InterruptVectorTable::addCallback(ValueType InterruptIndex, void (*Callback)(void))
 {   
     /**
      * 
@@ -104,7 +119,9 @@ bool InterruptVectorTable::RegisterInterruptCallback(ValueType InterruptIndex, v
     if (InterruptIndex < 0 || InterruptIndex >= 111)
         return false;
     
-    s_VectorTable[InterruptIndex + NVIC_USER_IRQ_OFFSET] = reinterpret_cast<ValueType>(Callback);
+    //s_VectorTable[InterruptIndex + NVIC_USER_IRQ_OFFSET] = reinterpret_cast<ValueType>(Callback);
+
+    m_VectorTableView[InterruptIndex + NVIC_USER_IRQ_OFFSET] = reinterpret_cast<ValueType>(Callback);
     
     /**
      * same as:
@@ -115,17 +132,17 @@ bool InterruptVectorTable::RegisterInterruptCallback(ValueType InterruptIndex, v
     return true;
 }
 
-void InterruptVectorTable::EnableInterrupt(ValueType InterruptIndex)
+void InterruptVectorTable::enableISR(ValueType InterruptIndex)
 {
     NVIC_EnableIRQ(static_cast<IRQn_Type>(InterruptIndex));
 }
 
-void InterruptVectorTable::DisableInterrupt(ValueType InterruptIndex)
+void InterruptVectorTable::disableISR(ValueType InterruptIndex)
 {
     NVIC_DisableIRQ(static_cast<IRQn_Type>(InterruptIndex));
 }
 
-void InterruptVectorTable::FireSoftwareInterrupt(ValueType InterruptIndex)
+void InterruptVectorTable::triggerIRQ(ValueType InterruptIndex)
 {
     /**
      * LPC allows a range of [0:111] as InterruptIndex
@@ -134,10 +151,10 @@ void InterruptVectorTable::FireSoftwareInterrupt(ValueType InterruptIndex)
         return;
     
     /**
-     * Bits 8:0 - 256 Interrupt values
+     * Bits 8:0 - 256 Interrupt values (binary 0b111111111 -> 0x1FF)
      * Values of bits 31:9 are reserved, so should not be read or touched
      * Manual UM10360 - Page 92
      */
-    NVIC->STIR |= (0xFF & InterruptIndex);
+    NVIC->STIR |= (0x1FF & InterruptIndex);
 }
 

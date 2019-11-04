@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <span-lite/include/nonstd/span.hpp>
 
 using ValueType = uint32_t;
 constexpr ValueType VectorsCount = 256;
@@ -34,8 +35,17 @@ class InterruptVectorTable
          * https://stackoverflow.com/questions/185844/how-to-initialize-private-static-members-in-c
          * 
          * The inline part allows for this to be compiled only once! and not in every .cpp file this might be included in.
+         * 
+         * If the Interrupt Vector Table needs to be relocated, we relocate it into RAM using this array.
          */
         alignas(VectorsCount * sizeof(ValueType)) inline static std::array<ValueType, VectorsCount> s_VectorTable;
+        
+        /**
+         * @brief If the InterruptVectorTable cannot be relocated, 
+         * we abstract it using the View
+         * std::span<> will be added in C++20 - This header only dependency will automatically support that.
+         */
+        nonstd::span<ValueType> m_VectorTableView;
 
 
     public:
@@ -70,27 +80,31 @@ class InterruptVectorTable
         /**
          * @brief 
          * 
-         * @param index 
+         * @param InterruptNumber 
          * @param Callback Function to be called, when the Interrupt is 
          */
-        bool RegisterInterruptCallback(ValueType index, void (*Callback)(void));
+        bool addCallback(ValueType InterruptNumber, void (*Callback)(void));
 
         /**
-         * @brief Disable interrupt at given index
+         * @brief Disable interrupt at given InterruptNumber
          * 
-         * @param index interrupt index, as defined in the manuals: >= 0
+         * @param InterruptNumber interrupt InterruptNumber, as defined in the manuals: >= 0
          */
-        void EnableInterrupt(ValueType index);
+        void enableISR(ValueType InterruptNumber);
 
         /**
-         * @brief Disable an interrupt.
+         * @brief Disable an interrupt / interrupt service routine
          * 
-         * @param index Is the index of the interrupt within the interrupt vctor table. 
+         * @param InterruptNumber Is the InterruptNumber of the interrupt within the interrupt vctor table. 
          *              Should be a ValueType greater than or equal to 0.
          */
-        void DisableInterrupt(ValueType index);
+        void disableISR(ValueType InterruptNumber);
 
-
-        void FireSoftwareInterrupt(ValueType index);
+        /**
+         * @brief Triggers a software interrupt request
+         * 
+         * @param InterruptNumber 
+         */
+        void triggerIRQ(ValueType InterruptNumber);
 };
 
