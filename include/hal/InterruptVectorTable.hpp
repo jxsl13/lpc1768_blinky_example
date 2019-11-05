@@ -1,10 +1,7 @@
 #pragma once
 
-#include <array>
-#include <span-lite/include/nonstd/span.hpp>
+#include <config.hpp>
 
-using ValueType = uint32_t;
-constexpr ValueType VectorsCount = 256;
 
 
 class InterruptVectorTable
@@ -22,31 +19,17 @@ class InterruptVectorTable
         InterruptVectorTable();
 
         /**
-         * UM10360 Manual
-         * 6.4 Vector table remapping
-         * The vector table should be located on a 256 word (1024 byte) boundary 
-         * to insure alignment on LPC176x/5x family devices.
-         * 
-         * 0x100 = 256 * sizeof(uint32_t) = 0x400 = 1024 byte
-         * Cortex M3 requires this to be aligned properly.
-         * 
-         * Since C++17 a static member variables may be defined with the inline keyword directly
-         * in the header file: inline static m_Whatever
-         * https://stackoverflow.com/questions/185844/how-to-initialize-private-static-members-in-c
-         * 
-         * The inline part allows for this to be compiled only once! and not in every .cpp file this might be included in.
-         * 
-         * If the Interrupt Vector Table needs to be relocated, we relocate it into RAM using this array.
+         * @brief Destroy the Interrupt Vector Table object
          */
-        alignas(VectorsCount * sizeof(ValueType)) inline static std::array<ValueType, VectorsCount> s_VectorTable;
-        
-        /**
-         * @brief If the InterruptVectorTable cannot be relocated, 
-         * we abstract it using the View
-         * std::span<> will be added in C++20 - This header only dependency will automatically support that.
-         */
-        nonstd::span<ValueType> m_VectorTableView;
+        ~InterruptVectorTable();
 
+        /**
+         * @brief This vector pointer needs to point to the Vector Table.
+         * The vector Table needs to have the explicit size of VectorsCount of the ValueType.
+         * The behaviour is undefined if the vector is accessed from with offsets that are not within the
+         * range [0:VectorsCount]
+         */
+        ValueType* m_VectorTable;
 
     public:
         enum InterruptTypes : ValueType; // forward declaration of enums with type/size specification.
@@ -63,6 +46,7 @@ class InterruptVectorTable
 
         /**
          * @brief Get the Singleton instance
+         * Aftr this instance has ben created, interrupts are enabled by default.
          * 
          * @return InterruptVectorTable& 
          */
@@ -72,9 +56,6 @@ class InterruptVectorTable
                                                     // Instantiated on first use.
             return instance;
         }
-
-
-    public:
         
 
         /**
@@ -84,6 +65,16 @@ class InterruptVectorTable
          * @param Callback Function to be called, when the Interrupt is 
          */
         bool addCallback(ValueType InterruptNumber, void (*Callback)(void));
+
+        /**
+         * @brief Enables interrupts globally
+         */
+        void enableIRQ();
+
+        /**
+         * @brief Disables Interrupts globally.
+         */
+        void disableIRQ();
 
         /**
          * @brief Disable interrupt at given InterruptNumber
@@ -106,5 +97,7 @@ class InterruptVectorTable
          * @param InterruptNumber 
          */
         void triggerIRQ(ValueType InterruptNumber);
+
+
 };
 

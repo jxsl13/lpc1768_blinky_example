@@ -54,57 +54,68 @@ enum InterruptVectorTable::InterruptTypes : ValueType {
 
 InterruptVectorTable::InterruptVectorTable()
 {
-    ValueType *vectors = (ValueType *)SCB->VTOR;
+    ValueType *VectorTable = (ValueType *)SCB->VTOR;
 
     /**
-     * @brief It is possible to manipulate the vector table without actually 
-     * Relocating it into RAM.
+     * @brief LPC1768 for example needs this alignment of the vector table.
+     * Also LPC1768 needs the vector table to be relocated into ram in order to dynamically
+     * change the function pointers.
      */
-    auto relocateIntoRam = [&](ValueType *VectorTable) -> void
-    {
-        // copy vector table to ram location
-        std::memcpy(s_VectorTable.data(), VectorTable, sizeof(ValueType) * VectorsCount); 
-
-
-        /* relocate vector table into RAM*/ 
-        // disable global interrupts
-        __disable_irq();
-
-        /* 
-            VTOR bit assignment
-            ===================
-            [31:30] - Reserved
-            [29:8] - TBLOFF
-                    Vector table base offset field. It contains bits[29:8] of the offset of the table base from the bottom of the memory map.
-                    
-                    Remark: Bit[29] determines whether the vector table is in the code or SRAM memory region:
-                    Bit[29] is sometimes called the TBLBASE bit. 
-                    • 0=code
-                    • 1=SRAM. 
-            [7:0] - Reserved
-            
-        */
-
-        /**
-         * @brief Mask only the TBLOFF part, don't touch the rest.
-         */
-        SCB->VTOR |= (ValueType) s_VectorTable.data() & 0x3FFFFF00;
-        
-        // wait for memory operations to finish
-        __DSB();
-
-        // enable interrupts again.
-        __enable_irq();
-    };
-
-    relocateIntoRam(vectors);
-
-    /**
-     * @brief Creates a view onto a specific memory region without
-     *          actually owning the region.
-     */
-    m_VectorTableView = {s_VectorTable.data(), s_VectorTable.size()};
+    alignas(sizeof(ValueType) * VectorsCount) static ValueType s_VectorTable[VectorsCount];
     
+    // copy vector table to ram location
+    std::memcpy(s_VectorTable, VectorTable, sizeof(ValueType) * VectorsCount); 
+
+    /* relocate vector table into RAM*/ 
+    // disable global interrupts
+    disableIRQ();
+
+    /* 
+        VTOR bit assignment
+        ===================
+        [31:30] - Reserved
+        [29:8] - TBLOFF
+                Vector table base offset field. It contains bits[29:8] of the offset of the table base from the bottom of the memory map.
+                
+                Remark: Bit[29] determines whether the vector table is in the code or SRAM memory region:
+                Bit[29] is sometimes called the TBLBASE bit. 
+                • 0=code
+                • 1=SRAM. 
+        [7:0] - Reserved
+        
+    */
+
+    /**
+     * @brief Mask only the TBLOFF part, don't touch the rest.
+     */
+    SCB->VTOR |= (ValueType)s_VectorTable & 0x3FFFFF00;
+    
+    // point to the static vector, as that vector stays the same forever.
+    m_VectorTable = s_VectorTable;
+    
+    // wait for memory operations to finish
+    __DSB();
+
+    /**
+     * We do not want to enable interrupts after the creation of the InterruptVectorTable instance,
+     * because we need to configure the interrupt before enabling them globally.
+     */
+}
+
+InterruptVectorTable::~InterruptVectorTable()
+{
+}
+
+void InterruptVectorTable::enableIRQ()
+{
+    // enable interrupts again.
+    __enable_irq();
+}
+
+void InterruptVectorTable::disableIRQ()
+{
+    // disable global interrupts
+    __disable_irq();
 }
 
 bool InterruptVectorTable::addCallback(ValueType InterruptIndex, void (*Callback)(void))
@@ -121,7 +132,9 @@ bool InterruptVectorTable::addCallback(ValueType InterruptIndex, void (*Callback
     
     //s_VectorTable[InterruptIndex + NVIC_USER_IRQ_OFFSET] = reinterpret_cast<ValueType>(Callback);
 
-    m_VectorTableView[InterruptIndex + NVIC_USER_IRQ_OFFSET] = reinterpret_cast<ValueType>(Callback);
+    m_VectorTable[InterruptIndex + NVIC_USER_IRQ_OFFSET] = reinterpret_cast<ValueType>(Callback);
+    
+    //NVIC_SetVector((IRQn)(InterruptIndex), (ValueType)Callback);
     
     /**
      * same as:

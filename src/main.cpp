@@ -1,8 +1,6 @@
-#include "hal/InterruptVectorTable.hpp"
-#include "proxy.hpp"
+#include <hal/InterruptVectorTable.hpp>
+#include <config.hpp>
 
-#include <cstring>
-#include <array>
 
 #ifdef __cplusplus
 extern "C" {
@@ -10,6 +8,11 @@ extern "C" {
 
 
 #if defined MCB1760
+
+// MCB1760 supports the STL, AVR Doesn't!
+#include <cstring>
+#include <array>
+
 
 void delay_ms(unsigned int ms)
 {
@@ -172,12 +175,7 @@ int main()
 
 #elif defined ARDUINO_UNO || defined MYAVR_BOARD_MK2
 
-void InitLED()
-{
-    // make the LED pin an output for PORTB5
-    // Port B, Bit 5-> B5
-    DDRB = 1 << DDB5;       // DDB5 = 5
-}
+
 
 void ToggleLED()
 {
@@ -185,21 +183,66 @@ void ToggleLED()
     PORTB ^= 1 << PB5;  // PB5 = 5
 }
 
-static std::array<std::vector<std::reference_wrapper<uint8_t>>, 25> g_InterruptVectorTable;
+void InitGPIO()
+{
+    // make port output & HIGH
+    // our power source
+    DDRB |= 1 << DDB4;
+    PORTB |= 1 << PB4;
+
+    // make Port B5 output & LOW
+    // Connected to an LED - Depending on the state of this, 
+    // the LED is either on or off.
+    DDRB |= 1 << DDB5;
+    PORTB &= ~(1 << PB5);
+
+    // Make Port D2 Input External Interrupt
+    DDRD &= ~(1 << DDD2);
+    PORTD |= (1 << PD2);
+
+}
+
+void InitINT0()
+{
+    // external interrupt 0
+
+    // on any logical change
+    // Manual - Page 80
+    EICRA |= (1 << ISC01);
+    EICRA &= ~(1 << ISC00);
+
+    // Enable INT0
+    EIMSK |= (1 << INT0);
+
+    // enable interrupts
+    sei();
+}
+
+ISR(INT0_vect)
+{
+    /**
+     * When an interrupt occurs, the Global Interrupt Enable I-bit is cleared 
+     * and all interrupts are disabled. The user software can write logic one to the I-bit 
+     * to enable nested interrupts.
+     * 
+     * We don't want the interrupts to be disabled, so we enable them after each interrupt again.
+     * 
+     * megaAVR® Data Sheet - Page 24
+     * 
+     */
+    //s_VectorTable[1]();
+    ToggleLED();
+}
+
 int main(void)
 {
-    uint8_t *vectors = (uint8_t *)0x0;
 
-   for (uint8_t i = 0; i < 25; i++)
-   {
-       g_InterruptVectorTable[i] = vectors[i];
-   }
-   
-   InitLED();
+   auto& VectorTable = InterruptVectorTable::getInstance();
+
+    InitGPIO();
+    InitINT0();
     while (1)
     {
-        _delay_ms(200);
-        ToggleLED();
     }
 
     return 0;
