@@ -11,7 +11,6 @@ constexpr ValueType VectorsCount = 256;
     || defined MYAVR_BOARD_MK2
 #include <util/delay.h>
 #include <avr/interrupt.h>
-#include <avr/wdt.h>
 
 using ValueType = uint8_t;              // megaAVR® Data Sheet - Page 1 - 8 Bit
 constexpr ValueType VectorsCount = 26;  // Page 66
