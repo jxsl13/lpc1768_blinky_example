@@ -1,10 +1,9 @@
-#include <hal/InterruptVectorTable.hpp>
-#include <config.hpp>
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <hal/InterruptVectorTable.hpp>
+#include <config.hpp>
 
 
 #if defined MCB1760
@@ -108,7 +107,7 @@ void InitEINT0()
 
 void BindEINT0Handler()
 {
-    NVIC_SetVector((IRQn)(18), (uint32_t)PushButton_Handler); // TODO: get this to work
+    NVIC_SetVector((IRQn)(18), (uint32_t)PushButton_Handler);
 }
 
 void EnableEINT0()
@@ -176,63 +175,61 @@ int main()
 #elif defined ARDUINO_UNO || defined MYAVR_BOARD_MK2
 
 
-
 void ToggleLED()
 {
     // toggle the LED
-    PORTB ^= 1 << PB5;  // PB5 = 5
+    TOGGLE(PORTB, PORTB5);
 }
 
 void InitGPIO()
 {
     // make port output & HIGH
     // our power source
-    DDRB |= 1 << DDB4;
-    PORTB |= 1 << PB4;
+    ENABLE(DDRB, DDB4);
+    ENABLE(PORTB, PORTB4);
 
     // make Port B5 output & LOW
     // Connected to an LED - Depending on the state of this, 
     // the LED is either on or off.
-    DDRB |= 1 << DDB5;
-    PORTB &= ~(1 << PB5);
+    ENABLE(DDRB, DDB5);
+    DISABLE(PORTB, PORTB5);
 
     // Make Port D2 Input External Interrupt
-    DDRD &= ~(1 << DDD2);
-    PORTD |= (1 << PD2);
-
+    DISABLE(DDRD, DDD2);
+    ENABLE(PORTD, PORTD2);
 }
 
 void InitINT0()
 {
     // external interrupt 0
 
-    // on any logical change
     // Manual - Page 80
-    EICRA |= (1 << ISC01);
-    EICRA &= ~(1 << ISC00);
 
-    // Enable INT0
-    EIMSK |= (1 << INT0);
+    // The rising edge of INT0 generates an interrupt request.
+    //ENABLE(EICRA, ISC01);
+    //ENABLE(EICRA, ISC00);
 
-    // enable interrupts
-    sei();
+    
+    // The falling edge of INT0 generates an interrupt request.
+    //ENABLE(EICRA, ISC01);
+    //DISABLE(EICRA, ISC00);
+
+    // The low level of INT0 generates an interrupt request.
+    DISABLE(EICRA, ISC01);
+    DISABLE(EICRA, ISC00);
+
+
+    // This iterrupt is not being triggered by toggling all three registers after each other
+    // TODO: further investigation
+    // Any logical change on INT0 generates an interrupt request.
+    //DISABLE(EICRA, ISC01);
+    //ENABLE(EICRA, ISC00);
+
+
+    // */
 }
 
-ISR(INT0_vect)
-{
-    /**
-     * When an interrupt occurs, the Global Interrupt Enable I-bit is cleared 
-     * and all interrupts are disabled. The user software can write logic one to the I-bit 
-     * to enable nested interrupts.
-     * 
-     * We don't want the interrupts to be disabled, so we enable them after each interrupt again.
-     * 
-     * megaAVR® Data Sheet - Page 24
-     * 
-     */
-    //s_VectorTable[1]();
-    ToggleLED();
-}
+
 
 int main(void)
 {
@@ -241,8 +238,15 @@ int main(void)
 
     InitGPIO();
     InitINT0();
+
+    VectorTable.addCallback(1, ToggleLED);
+    VectorTable.enableISR(1);
+    VectorTable.enableIRQ();
+
     while (1)
     {
+        _delay_ms(1000);
+        VectorTable.triggerIRQ(1);
     }
 
     return 0;
