@@ -145,7 +145,7 @@ int main()
         auto& vectorTable = InterruptVectorTable::getInstance();    // move vector table into singleton/RAM/ aligned memory block
 
         // tell the controller to use the PushButton_Handler when the interrupt 18 = EINT0 is triggered
-        vectorTable.addCallback(18, PushButton_Handler);
+        vectorTable.setCallback(18, PushButton_Handler);
 
         // allow the EINT0 inrettupt to be triggered
         vectorTable.enableISR(18);
@@ -204,49 +204,27 @@ void InitINT0()
     // external interrupt 0
 
     // Manual - Page 80
-
-    // The rising edge of INT0 generates an interrupt request.
-    //ENABLE(EICRA, ISC01);
-    //ENABLE(EICRA, ISC00);
-
-    
     // The falling edge of INT0 generates an interrupt request.
-    //ENABLE(EICRA, ISC01);
-    //DISABLE(EICRA, ISC00);
-
-    // The low level of INT0 generates an interrupt request.
-    DISABLE(EICRA, ISC01);
+    ENABLE(EICRA, ISC01);
     DISABLE(EICRA, ISC00);
-
-
-    // This iterrupt is not being triggered by toggling all three registers after each other
-    // TODO: further investigation
-    // Any logical change on INT0 generates an interrupt request.
-    //DISABLE(EICRA, ISC01);
-    //ENABLE(EICRA, ISC00);
-
-
-    // */
 }
 
 
 
 int main(void)
 {
-
-   auto& VectorTable = InterruptVectorTable::getInstance();
+    using irqt = InterruptVectorTable::IRQTypes;
+    auto& VectorTable = InterruptVectorTable::getInstance();
 
     InitGPIO();
     InitINT0();
 
-    VectorTable.addCallback(1, ToggleLED);
+    VectorTable.setCallback(irqt::INT0_IRQn, [](){if(EIFR & (1 << 0)) ToggleLED();});
     VectorTable.enableISR(1);
     VectorTable.enableIRQ();
 
     while (1)
-    {
-        _delay_ms(1000);
-        VectorTable.triggerIRQ(1);
+    {   
     }
 
     return 0;
@@ -254,31 +232,124 @@ int main(void)
 
 #elif defined STM32F407VG
 
-#define LEDPORT (GPIOD)
-#define LED1 (12)
-#define ENABLE_GPIO_CLOCK (RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN)
-#define GPIOMODER (GPIO_MODER_MODER12_0)
 
 
 void ms_delay(int ms)
 {
    while (ms-- > 0) {
-      volatile int x=1000;
+      volatile int x=6000;
       while (x-- > 0)
          __asm("nop");
    }
 }
 
+enum PortX : ValueType
+{
+        PA = 0,
+        PB = 1,
+        PC = 2,
+        PD = 3,
+        PE = 4,
+        PF = 5,
+        PG = 6,
+        PH = 7,
+        PI = 8,
+};
+
+enum Trigger : ValueType
+{
+    Trigger_None = 0,
+    Trigger_Rising_Edge = 1,             
+    Trigger_Falling_Edge = 2,           
+    Trigger_Logical_Change = 3,
+};
+
+void InitGPIO()
+{
+
+    // LED
+    RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN; // enable clock on port D
+    GPIOD->MODER |= GPIO_MODER_MODER12_0; // _0 -> 0b01 -> General Purpose ouput
+
+    // PA0 - External Input
+    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;    // Enable Clock for Port A
+    GPIOA->MODER |= 0x0;                    // PA0 is the input(?) for the user pushbutton.
+
+
+
+    // Trigger EXTI0 with PA0 (EXTI[X] -> P[Y][X])
+    ValueType Port = PortX::PA;
+    ValueType EXTIX = 0;
+
+    /* 
+        P[X] will trigger the interrupt
+        let Port be A and EXTIX be 1,
+        this will lead to PA1 to trigger the interupt EXTI1
+    */
+    SYSCFG->EXTICR[EXTIX % 4] |= (Port << (EXTIX * 4));
+}
+
+
+void InitEXTI0()
+{
+
+    ValueType EXTIX = 0;
+    ValueType Trigger = Trigger_Falling_Edge;
+
+    if (!Trigger)
+        return;
+    
+    if (EXTIX > 22)
+        return;
+    
+    /* Clear EXTI line configuration */
+    /**
+     * LINE := (1 << Line_Number)
+     * 
+     * We trigger events and interrupts at the same time!
+     */
+    ENABLE(EXTI->IMR, EXTIX);  // InterruptMaskRegister -> EXTI_IMR_MR0 = 0
+    //ENABLE(EXTI->EMR, EXTIX);  // EventMaskRegister ->     EXTI_EMR_MR0 = 0
+
+    if (Trigger == Trigger_Rising_Edge)
+    {
+        ENABLE(EXTI->RTSR, EXTIX);
+        DISABLE(EXTI->FTSR, EXTIX);
+    }
+    else if(Trigger == Trigger_Falling_Edge)
+    {
+        DISABLE(EXTI->RTSR, EXTIX);
+        ENABLE(EXTI->FTSR, EXTIX);
+    }
+    else
+    {
+        ENABLE(EXTI->RTSR, EXTIX);
+        ENABLE(EXTI->FTSR, EXTIX);
+    }
+}
+
+void ToggleLED()
+{
+    // PD12 -> LED Pin
+    GPIOD->ODR ^= (1<<12); 		// toggle diodes
+}
+
+void EXTI0_IRQHandler()
+{
+    ToggleLED();
+}
+
 int main(void)
 {
-	ENABLE_GPIO_CLOCK; 		 			// enable the clock to GPIO
-	LEDPORT->MODER |= GPIOMODER;		// set pins to be general purpose output
-	for (;;) {
-		ms_delay(1000);
-		LEDPORT->ODR ^= (1<<LED1); 		// toggle diodes
-	}
-	
-	return 0;
+    InitGPIO();
+    InitEXTI0();
+
+    while (1)
+    {
+        ms_delay(500);
+        ToggleLED();
+    }
+
 }
 
 #endif // Different mains

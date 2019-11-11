@@ -2,6 +2,23 @@
 #include <string.h>
 #include <hal/InterruptVectorTable.hpp>
 
+#include "InterruptTypes.hpp"
+
+/**
+ * @brief List of valid IRQ Index numbers
+ * 
+ */
+const ValidIRQTypes InterruptVectorTable::s_ValidIRQTypes = {
+    25,
+    {  
+        1,  2,  3,  4,  5, 
+        6,  7,  8,  9, 10, 
+        11, 12, 13, 14, 15, 
+        16, 17, 18, 19, 20, 
+        21, 22, 23, 24, 25
+    }
+};
+
 #define INT0_vect _VECTOR(1)          /* External Interrupt Request 0 */
 #define INT1_vect _VECTOR(2)          /* External Interrupt Request 1 */
 #define PCINT0_vect _VECTOR(3)        /* Pin Change Interrupt Request 0 */
@@ -28,44 +45,6 @@
 #define TWI_vect _VECTOR(24)          /* Two-wire Serial Interface */
 #define SPM_READY_vect _VECTOR(25)    /* Store Program Memory Read */
 
-enum InterruptVectorTable::IRQTypes : ValueType
-{
-    RESET_IDX = 0, // Not available.
-    INT0_IDX = 1,
-    INT1_IDX,
-    PCINT0_IDX,
-    PCINT1_IDX,
-    PCINT2_IDX,
-    WDT_IDX,
-    TIMER2_COMPA_IDX,
-    TIMER2_COMPB_IDX,
-    TIMER2_OVF_IDX,
-    TIMER1_CAPT_IDX,
-    TIMER1_COMPA_IDX,
-    TIMER1_COMPB_IDX,
-    TIMER1_OVF_IDX,
-    TIMER0_COMPA_IDX,
-    TIMER0_COMPB_IDX,
-    TIMER0_OVF_IDX,
-    SPI_STC_IDX,
-    USART_RXC_IDX,
-    USART_UDRE_IDX,
-    USART_TXC_IDX,
-    ADC_IDX,
-    EE_READY_IDX,
-    ANALOG_COMP_IDX,
-    TWI_IDX,
-    SPM_READY_IDX = 25,
-};
-
-enum IRQTrigger : ValueType
-{
-    LOW_LEVEL       = 0,
-    LOGICAL_CHANGE  = 1,
-    FALLING_EDGE    = 2,
-    RISING_EDGE     = 3,
-    TRIGGER_NONE    = 4,
-};
 
 /**
  * @brief Global Interrupt Vector Jump Table that contains function pointers
@@ -137,7 +116,8 @@ const __RegisterBits<1> s_InterruptEnableBitMap[VectorsCount] = {
     {&EECR, EERIE},
     {&ACSR, ACIE},
     {&TWCR, TWIE},
-    {&SPMCSR, SPMIE}};
+    {&SPMCSR, SPMIE},
+};
 
 ISR(INT0_vect)
 {
@@ -283,7 +263,7 @@ void InterruptVectorTable::disableIRQ()
     cli();
 }
 
-bool InterruptVectorTable::addCallback(ValueType InterruptIndex, void (*Callback)(void))
+bool InterruptVectorTable::setCallback(ValueType InterruptIndex, void (*Callback)(void))
 {
     // setting index 0 -> not supported
     if (InterruptIndex <= 0 || VectorsCount <= InterruptIndex)
