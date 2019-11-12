@@ -346,16 +346,31 @@ void FastBlinking()
     }    
 }
 
+void SlowBlinking()
+{
+    for (ValueType i = 0; i < 8; i++)
+    {
+        ToggleLED();
+        ms_delay(200);
+    }    
+}
+
 void EXTI0_IRQHandler()
 {
-
     FastBlinking();
 
-    ValueType IRQIndex = 6;
+    constexpr ValueType IRQIndex = 6;
 
 
     // clear pending bit, otherwise the interrupt is being fired indefinitly.
     // don't touch bits [31:23]
+    ValueType active  = !NVIC_GetActive((IRQn_Type)IRQIndex);
+    if (active)
+    {
+        FastBlinking();
+        NVIC_ClearPendingIRQ((IRQn_Type)IRQIndex);
+    }
+    
     EXTI->PR |= ((1 << IRQIndex) & 0x7FFFFF);
     
 }
@@ -367,13 +382,25 @@ void EnableInterrupts()
 
 int main(void)
 {
+    constexpr bool useEncapsulated = true;
     ValueType IRQIndex = 6;
 
     InitGPIO();
     InitEXTI0();
-    NVIC_EnableIRQ((IRQn_Type)IRQIndex);
-
-    EnableInterrupts();
+    if (useEncapsulated)
+    {
+        auto& VectorTable = InterruptVectorTable::getInstance();
+        VectorTable.setCallback(IRQIndex, SlowBlinking);
+        VectorTable.enableISR(IRQIndex);
+        VectorTable.enableIRQ();
+    }
+    else
+    {
+        NVIC_EnableIRQ((IRQn_Type)IRQIndex);
+        EnableInterrupts();
+    }
+    
+    
 
     while (1)
     {

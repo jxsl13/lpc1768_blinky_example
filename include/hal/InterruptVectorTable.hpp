@@ -8,7 +8,19 @@
 #define TRIGGER(REGISTER, BIT) \
     TOGGLE(REGISTER, BIT);     \
     TOGGLE(REGISTER, BIT)
-#define IS_SET(REGISTER, BIT) (REGISTER & (1 << BIT)) > 0
+#define IS_SET(REGISTER, BIT) (REGISTER & (1 << BIT)) != 0
+
+
+/**
+ * @brief If the available interrupt indices do not construct a continuous range, 
+ * one could force checks by wrapping code segments into this macro.
+ */
+#ifndef IRQ_VALIDITY_CHECK
+    #define IRQ_INDEX_CHECK(X) X
+#else
+     #define IRQ_INDEX_CHECK(X) if(IsValidIRQType(InterruptIndex)) {X;}
+#endif
+
 
 struct ValidIRQTypes
 {
