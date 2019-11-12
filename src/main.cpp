@@ -1,16 +1,13 @@
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
 #include <hal/InterruptVectorTable.hpp>
 #include <config.hpp>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #if defined MCB1760
-
-// MCB1760 supports the STL, AVR Doesn't!
-#include <cstring>
-#include <array>
 
 
 void delay_ms(unsigned int ms)
@@ -213,13 +210,17 @@ void InitINT0()
 
 int main(void)
 {
-    using irqt = InterruptVectorTable::IRQTypes;
     auto& VectorTable = InterruptVectorTable::getInstance();
+    ValueType INT0_IRQn = 1;
 
     InitGPIO();
     InitINT0();
 
-    VectorTable.setCallback(irqt::INT0_IRQn, [](){if(EIFR & (1 << 0)) ToggleLED();});
+    VectorTable.setCallback(INT0_IRQn, 
+        []() -> void {
+            if(EIFR & (1 << 0)) ToggleLED();
+        }
+    );
     VectorTable.enableISR(1);
     VectorTable.enableIRQ();
 
@@ -272,9 +273,11 @@ void InitGPIO()
     GPIOD->MODER |= GPIO_MODER_MODER12_0; // _0 -> 0b01 -> General Purpose ouput
 
     // PA0 - External Input
-    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;    // Enable Clock for Port A
-    GPIOA->MODER |= 0x0;                    // PA0 is the input(?) for the user pushbutton.
+    ValueType EXTIPin = 0;
 
+    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;        // Enable Clock for Port A
+    GPIOA->MODER &= ~(0x03 << (2 * EXTIPin));   // PA0 is the input(?) for the user pushbutton.
+    
 
 
     // Trigger EXTI0 with PA0 (EXTI[X] -> P[Y][X])
@@ -294,7 +297,7 @@ void InitEXTI0()
 {
 
     ValueType EXTIX = 0;
-    ValueType Trigger = Trigger_Falling_Edge;
+    ValueType Trigger = Trigger_Rising_Edge;
 
     if (!Trigger)
         return;
@@ -309,7 +312,7 @@ void InitEXTI0()
      * We trigger events and interrupts at the same time!
      */
     ENABLE(EXTI->IMR, EXTIX);  // InterruptMaskRegister -> EXTI_IMR_MR0 = 0
-    //ENABLE(EXTI->EMR, EXTIX);  // EventMaskRegister ->     EXTI_EMR_MR0 = 0
+    ENABLE(EXTI->EMR, EXTIX);  // EventMaskRegister ->     EXTI_EMR_MR0 = 0
 
     if (Trigger == Trigger_Rising_Edge)
     {
@@ -339,15 +342,25 @@ void EXTI0_IRQHandler()
     ToggleLED();
 }
 
+void EnableInterrupts()
+{
+    __enable_irq();
+}
+
 int main(void)
 {
+    ValueType IRQIndex = 6;
+
     InitGPIO();
     InitEXTI0();
-
+    EnableInterrupts();
+    NVIC_EnableIRQ((IRQn_Type)IRQIndex);
     while (1)
     {
+        /*
         ms_delay(500);
-        ToggleLED();
+        NVIC->STIR |= (0x1FF & IRQIndex);
+        */
     }
 
 }

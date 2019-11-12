@@ -1,8 +1,19 @@
 #pragma once // include this header only once
 
+// print c++ standard version
+#define XSTR(x) STR(x)
+#define STR(x) #x
+#pragma message (XSTR(__cplusplus))
+
+
 #if defined MCB1760
 #include <target/MCB1760/LPC17xx.h>
-#include <target/MCB1760/Pins.h>
+//#include <target/MCB1760/Pins.h>
+
+// used for testing purposes
+// in the MCB1760 part
+#include <cstring>
+#include <array>
 
 using ValueType = uint32_t;
 constexpr ValueType VectorsCount = 256;

@@ -12,9 +12,10 @@
 
 struct ValidIRQTypes
 {
-    const ValueType m_size;
-    const ValueType m_ValidTypes[];
+     ValueType m_size;
+     ValueType m_ValidTypes[];
 
+     //constexpr ValidIRQTypes(decltype(m_size) size, decltype(m_ValidTypes) validTypes) : m_size(size), m_ValidTypes(validTypes){};
     inline ValueType size() { return m_size; };
 
      /**
