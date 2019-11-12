@@ -337,9 +337,27 @@ void ToggleLED()
     GPIOD->ODR ^= (1<<12); 		// toggle diodes
 }
 
+void FastBlinking()
+{
+    for (ValueType i = 0; i < 16; i++)
+    {
+        ToggleLED();
+        ms_delay(100);
+    }    
+}
+
 void EXTI0_IRQHandler()
 {
-    ToggleLED();
+
+    FastBlinking();
+
+    ValueType IRQIndex = 6;
+
+
+    // clear pending bit, otherwise the interrupt is being fired indefinitly.
+    // don't touch bits [31:23]
+    EXTI->PR |= ((1 << IRQIndex) & 0x7FFFFF);
+    
 }
 
 void EnableInterrupts()
@@ -353,8 +371,10 @@ int main(void)
 
     InitGPIO();
     InitEXTI0();
-    EnableInterrupts();
     NVIC_EnableIRQ((IRQn_Type)IRQIndex);
+
+    EnableInterrupts();
+
     while (1)
     {
         /*

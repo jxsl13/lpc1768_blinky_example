@@ -15,7 +15,6 @@ struct ValidIRQTypes
      ValueType m_size;
      ValueType m_ValidTypes[];
 
-     //constexpr ValidIRQTypes(decltype(m_size) size, decltype(m_ValidTypes) validTypes) : m_size(size), m_ValidTypes(validTypes){};
     inline ValueType size() { return m_size; };
 
      /**
