@@ -24,8 +24,8 @@
 
 struct ValidIRQTypes
 {
-     ValueType m_size;
-     ValueType m_ValidTypes[];
+     const ValueType m_size;
+     const ValueType m_ValidTypes[ValidInterruptCount];
 
     inline ValueType size() { return m_size; };
 
