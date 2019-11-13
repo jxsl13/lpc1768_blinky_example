@@ -85,10 +85,6 @@ class InterruptVectorTable
          */
     InterruptVectorTable();
 
-    /**
-         * @brief Destroy the Interrupt Vector Table object
-         */
-    ~InterruptVectorTable();
 
     /**
          * @brief This vector pointer needs to point to the Vector Table.

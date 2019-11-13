@@ -201,10 +201,6 @@ InterruptVectorTable::InterruptVectorTable()
      */
 }
 
-InterruptVectorTable::~InterruptVectorTable()
-{
-}
-
 void InterruptVectorTable::enableIRQ()
 {
     // enable interrupts again.
