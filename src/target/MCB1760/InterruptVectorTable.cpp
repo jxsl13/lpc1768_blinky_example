@@ -52,7 +52,7 @@ InterruptVectorTable::InterruptVectorTable()
     /**
      * @brief Mask only the TBLOFF part, don't touch the rest.
      */
-    SCB->VTOR |= (ValueType)s_VectorTable & 0x3FFFFF00;
+    SCB->VTOR = (ValueType)s_VectorTable & 0x3FFFFF00;
     
     // point to the static vector, as that vector stays the same forever.
     m_VectorTable = s_VectorTable;
@@ -87,7 +87,7 @@ bool InterruptVectorTable::setCallback(ValueType InterruptIndex, void (*Callback
      * 
      * LPC allows a range of [0:111] as InterruptIndex
      */
-    if (InterruptIndex < 0 || InterruptIndex >= 111)
+    if (InterruptIndex < 0 || 111 <= InterruptIndex)
         return false;
     
     //s_VectorTable[InterruptIndex + NVIC_USER_IRQ_OFFSET] = reinterpret_cast<ValueType>(Callback);
