@@ -1,6 +1,7 @@
 
 #include <string.h>
 #include <hal/InterruptVectorTable.hpp>
+#include <utils/BitMacros.hpp>
 #include <utils/RegisterBits.hpp>
 
 #include "InterruptTypes.hpp"
@@ -259,7 +260,16 @@ void InterruptVectorTable::disableISR(ValueType InterruptIndex)
 
 void InterruptVectorTable::triggerIRQ(ValueType InterruptIndex)
 {
+
+    // check if index is valid
     if (InterruptIndex < 0 || VectorsCount <= InterruptIndex)
+        return;
+    
+    // check if interrupt is globally enabled as well as the specific ISR
+    ValueType* pRegister = s_InterruptEnableBitMap[InterruptIndex].m_Register;
+    ValueType Bit = s_InterruptEnableBitMap[InterruptIndex].m_Bits[0];
+
+    if(!IS_SET(SREG, 7) || !IS_SET(*pRegister, Bit))
         return;
 
     // call the function 
