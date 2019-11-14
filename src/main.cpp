@@ -17,98 +17,79 @@ void delay_ms(unsigned int ms)
     for(j=0;j<6000;j++);
 }
 
-void InitPower()
-{
-    LPC_SC->PCONP |= (1 << 15);             // Enable power
+
+void InitGPIO()
+{   
+    SystemInit();                       // startup board in a predefined state
+
+    /* Enable Power */
+    ENABLE(LPC_SC->PCONP, 15);          // Enable power
+
+    /* Init LED */
+    DISABLE(LPC_PINCON->PINSEL3, 24);   // LED connected to P1.28 is in GPIO mode (see Table 83)
+    DISABLE(LPC_PINCON->PINSEL3, 25);   // second bit of P1.28
+
+    ENABLE(LPC_GPIO1->FIODIR, 28);      // Configure LED pins as OUTPUT - P1.28
+    ENABLE(LPC_GPIO1->FIOCLR, 28);      // set P1.28 to LOW
+
+    /* Init Pushbutton */
+    ENABLE(LPC_PINCON->PINSEL4, 20);    // Configure P2_10, as EINT0 (see data sheet of PINSEL4)
+    DISABLE(LPC_GPIO2->FIODIR, 10);     // P2.10 is an input pin
+    ENABLE(LPC_GPIOINT->IO2IntEnF, 10); // P2.10 reads the falling edges to generate an interrupt
 }
 
-void InitLED()
+void InitExtInt0()
 {
-    LPC_PINCON->PINSEL3 &=   ~(0 << 25) | ~(0 << 24);       // LED connected to P1.28 is in GPIO mode (see Table 83)
-    LPC_GPIO1->FIODIR   =                   (1<< 28);       // Configure LED pins as OUTPUT - P1.28*/
-    LPC_GPIO1->FIOCLR   |=                 (1 << 28);       // set P1.28 to LOW
-}
-
-void InitPushButton()
-{
-
-    LPC_PINCON->PINSEL4     =     (1<<20);      // Configure P2_10, as EINT0 (see data sheet of PINSEL4)
-    LPC_GPIO2->FIODIR       &= ~(0 << 10);      // P2.10 is an input pin
-    LPC_GPIOINT->IO2IntEnF  |=  (1 << 10);      // P2.10 reads the falling edges to generate an interrupt
+    ENABLE(LPC_SC->EXTINT, 0);      // Clear Pending interrupts
+    ENABLE(LPC_SC->EXTMODE, 0);     // Configure EINTx as Edge Triggered
+    ENABLE(LPC_SC->EXTPOLAR, 0);    // Configure EINTx as Falling Edge      
 }
 
 void ToggleLED()
 {
-    #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
-
-    // check if bit is set, then toggle it depending on result.
-    if(CHECK_BIT(LPC_GPIO1->FIOPIN, 28))
-    {
-        LPC_GPIO1->FIOCLR |= (1 << 28);
-    }
-    else
-    {
-        LPC_GPIO1->FIOSET |= (1 << 28);
-    }
+    TOGGLE(LPC_GPIO1->FIOPIN, 28);
 }
 
-// TODO: also needs to have the pending bit cleared.
-inline void ClearInterruptFlagEINTX(ValueType X)
+void ClearIRQCondition()
 {
-    ENABLE(LPC_SC->EXTINT, X);     // Clear Interrupt Flag/Pending Bit
+    ENABLE(LPC_SC->EXTINT, 0); // Clear Interrupt Flag/Pending Bit -> 0 = EINT0
 }
 
 void PushButton_Handler()
 {
     ToggleLED();
-    ClearInterruptFlagEINTX(0);
+    ClearIRQCondition();
 }
 
-
-void InitEINT0()
-{
-    LPC_SC->EXTINT      = (1<<0);	    // Clear Pending interrupts
-    LPC_SC->EXTMODE     = (1<<0);       // Configure EINTx as Edge Triggered
-    LPC_SC->EXTPOLAR    = (1<<0);       // Configure EINTx as Falling Edge
-}
 
 
 int main()
 {   
-    ValueType IQRNumber = 18;
-    SystemInit();       // startup board in a predefined state
-
-    InitPower();        // explicitly enable power
-    InitPushButton();   // configure pushbutton to trigger the EINT0 interrupt
-    InitLED();          // configure LED's GPIO pin to be an output & set its value to LOW
-    InitEINT0();        // configure, how the interrupt is triggered.
+    ValueType IRQIndex = 18;
+    InitGPIO();         // Initialize Power, LED and Pushbutton
+    InitExtInt0();      // configure, how the interrupt is triggered(EINT0).
 
     auto& vectorTable = InterruptVectorTable::getInstance();    // move vector table into singleton/RAM/ aligned memory block
-
-    // tell the controller to use the PushButton_Handler when the interrupt 18 = EINT0 is triggered
-    vectorTable.setCallback(IQRNumber, PushButton_Handler);
-
-    // allow the EINT0 inrettupt to be triggered
-    vectorTable.enableISR(IQRNumber);
-
-    // enable global interrupts
+    vectorTable.setCallback(IRQIndex, PushButton_Handler);
+    vectorTable.enableISR(IRQIndex);
     vectorTable.enableIRQ();
 
     while(1)
     {
-        // trigger interrupt via software (easier testing, less configuration of buttons etc.)
-        vectorTable.triggerIRQ(IQRNumber);
+        vectorTable.triggerIRQ(IRQIndex);
         delay_ms(1000);
     } 
 }
 
 #elif defined ARDUINO_UNO || defined MYAVR_BOARD_MK2
 
-
-void ToggleLED()
+void delay_ms(unsigned int ms)
 {
-    // toggle the LED
-    TOGGLE(PORTB, PORTB5);
+    while (0 < ms)
+    {  
+        _delay_ms(1);
+        --ms;
+    }
 }
 
 void InitGPIO()
@@ -129,46 +110,57 @@ void InitGPIO()
     ENABLE(PORTD, PORTD2);
 }
 
-void InitINT0()
+void InitExtInt0()
 {
-    // external interrupt 0
-
     // Manual - Page 80
     // The falling edge of INT0 generates an interrupt request.
     ENABLE(EICRA, ISC01);
     DISABLE(EICRA, ISC00);
 }
 
+void ToggleLED()
+{
+    // toggle the LED
+    TOGGLE(PORTB, PORTB5);    
+}
+
+void PushButton_Handler()
+{
+    
+    ToggleLED();
+    
+    
+    ENABLE(EIFR, 0); // clear more or less pending bit.
+    
+    
+}
 
 
 int main(void)
 {
+    ValueType IRQIndex = 1;
+
+    InitGPIO();     // Configure LED(IN), Pushbutton(OUT)
+    InitExtInt0();  // INT0 Edge triggered
+
+   
     auto& VectorTable = InterruptVectorTable::getInstance();
-    ValueType INT0_IRQn = 1;
-
-    InitGPIO();
-    InitINT0();
-
-    VectorTable.setCallback(INT0_IRQn, 
-        []() -> void {
-            if(EIFR & (1 << 0)) ToggleLED();
-        }
-    );
-    VectorTable.enableISR(1);
+    VectorTable.setCallback(IRQIndex, PushButton_Handler);
+    VectorTable.enableISR(IRQIndex);
     VectorTable.enableIRQ();
 
     while (1)
     {   
+        VectorTable.triggerIRQ(IRQIndex);
+        delay_ms(1000);
     }
-
-    return 0;
 }
 
 #elif defined STM32F407VG
 
 
 
-void ms_delay(int ms)
+void delay_ms(unsigned int ms)
 {
    while (ms-- > 0) {
       volatile int x=6000;
@@ -192,29 +184,30 @@ enum PortX : ValueType
 
 enum Trigger : ValueType
 {
-    Trigger_None = 0,
-    Trigger_Rising_Edge = 1,             
-    Trigger_Falling_Edge = 2,           
-    Trigger_Logical_Change = 3,
+    Trigger_None = 0b00,
+    Trigger_Rising_Edge = 0b01,             
+    Trigger_Falling_Edge = 0b10,           
+    Trigger_Logical_Change = Trigger_Rising_Edge | Trigger_Falling_Edge,
 };
 
 void InitGPIO()
 {
 
     // LED
-    RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN; // enable clock on port D
-    GPIOD->MODER |= GPIO_MODER_MODER12_0; // _0 -> 0b01 -> General Purpose ouput
+    ValueType PD12 = 12;
+    ENABLE(RCC->AHB1ENR, PD);               // enable clock on Port D
+    ENABLE(GPIOD->MODER, (2 * PD12));       // 0b01 -> General Purpose ouput
+    DISABLE(GPIOD->MODER, (2 * PD12) + 1);  // set PD12 to Output
 
     // PA0 - External Input
-    ValueType EXTIPin = 0;
-
-    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;        // Enable Clock for Port A
-    GPIOA->MODER &= ~(0x03 << (2 * EXTIPin));   // PA0 is the input(?) for the user pushbutton.
+    ValueType PA0 = 0;
+    ENABLE(RCC->AHB1ENR, PA);           // Enable Clock for Port A
+    DISABLE(GPIOA->MODER, 2 * PA0);     // set PA0 to be an input
+    DISABLE(GPIOA->MODER, 2 * PA0 + 1); // PA0 input
     
 
-
     // Trigger EXTI0 with PA0 (EXTI[X] -> P[Y][X])
-    ValueType Port = PortX::PA;
+    ValueType Port = PA;
     ValueType EXTIX = 0;
 
     /* 
@@ -264,67 +257,35 @@ void InitEXTI0()
     }
 }
 
-void ClearEXTI0Condition()
+void ClearIRQCondition()
 {
-    ENABLE(EXTI->PR, EXTI0_IRQn);
+    ValueType IRQIndex = EXTI0_IRQn;
+
+    if (IRQIndex > 22)
+    {
+        //EXTI->PR |= ((1 << IRQIndex) & 0x7FFFFF); // first [22:0]
+        return; // mask prevents any other bits from being set.
+    }
+
+    ENABLE(EXTI->PR, IRQIndex);    
 }
+
 
 void ToggleLED()
 {
     ValueType PD12 = 12;
-    
-    // PD12 -> LED Pin
     TOGGLE(GPIOD->ODR, PD12);
-    
+}
+
+void Pushbutton_Handler()
+{
+    ToggleLED();
     // clear interrupt condition (EXTI Pending Bit Register)
     // otherwise you will get tailchained interrupts.
-    ClearEXTI0Condition();
+    ClearIRQCondition();
 }
 
 
-
-void FastBlinking()
-{
-    for (ValueType i = 0; i < 16; i++)
-    {
-        ToggleLED();
-        ms_delay(100);
-    }    
-}
-
-void SlowBlinking()
-{
-    for (ValueType i = 0; i < 8; i++)
-    {
-        ToggleLED();
-        ms_delay(200);
-    }
-}
-
-void EXTI0_IRQHandler()
-{
-    FastBlinking();
-
-    constexpr ValueType IRQIndex = 6;
-
-
-    // clear pending bit, otherwise the interrupt is being fired indefinitly.
-    // don't touch bits [31:23]
-    ValueType active  = !NVIC_GetActive((IRQn_Type)IRQIndex);
-    if (active)
-    {
-        FastBlinking();
-        NVIC_ClearPendingIRQ((IRQn_Type)IRQIndex);
-    }
-    
-    EXTI->PR |= ((1 << IRQIndex) & 0x7FFFFF);
-    
-}
-
-void EnableInterrupts()
-{
-    __enable_irq();
-}
 
 int main(void)
 {
@@ -337,15 +298,14 @@ int main(void)
     VectorTable.setCallback(IRQIndex, ToggleLED);
     
     VectorTable.enableISR(IRQIndex);
-    NVIC_EnableIRQ((IRQn_Type)IRQIndex);
-    EnableInterrupts();
-    
+    VectorTable.enableIRQ();    
     
 
     while (1)
     {
-        ms_delay(1000);
-        NVIC->STIR |= (0x1FF & IRQIndex);
+        
+        VectorTable.triggerIRQ(IRQIndex);
+        delay_ms(1000);
     }
 
 }

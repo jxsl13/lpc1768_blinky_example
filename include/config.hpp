@@ -6,7 +6,6 @@
 
 #if defined MCB1760
 #include <target/MCB1760/LPC17xx.h>
-//#include <target/MCB1760/Pins.h>
 
 // used for testing purposes
 // in the MCB1760 part
