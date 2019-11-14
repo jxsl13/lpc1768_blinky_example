@@ -52,48 +52,18 @@ void ToggleLED()
     }
 }
 
-inline void ClearInterruptFlagEINTX(uint32_t X)
+// TODO: also needs to have the pending bit cleared.
+inline void ClearInterruptFlagEINTX(ValueType X)
 {
-    LPC_SC->EXTINT |= (1<<X);      // Clear Interrupt Flag
+    ENABLE(LPC_SC->EXTINT, X);     // Clear Interrupt Flag/Pending Bit
 }
 
 void PushButton_Handler()
 {
+    ToggleLED();
     ClearInterruptFlagEINTX(0);
-    ToggleLED(); 
 }
 
-void InitRAMInterruptVectorTable()
-{
-    constexpr uint32_t VECTORTABLE_SIZE = 256;
-
-    /**
-     * @brief Aligment is in bytes!
-     *  Global static vector table variable
-     * 
-     * compiler seems to align correctly in any case.
-    */
-    alignas(VECTORTABLE_SIZE * sizeof(uint32_t)) static std::array<uint32_t, VECTORTABLE_SIZE> g_VectorTable;
-
-    uint32_t *vectors = (uint32_t *)SCB->VTOR;
-
-    // copy vector table to ram location
-    std::memcpy(g_VectorTable.data(), vectors, sizeof(uint32_t) * VECTORTABLE_SIZE);
-
-
-    /* relocate vector table into RAM*/ 
-    // disable global interrupts
-    __disable_irq();
-
-    // change vectortable location
-    SCB->VTOR = (uint32_t) g_VectorTable.data();
-    
-    // wait for memory operations to finish
-    __DSB();
-
-    // enable interrupts again.
-    __enable_irq();
-}
 
 void InitEINT0()
 {
@@ -102,71 +72,34 @@ void InitEINT0()
     LPC_SC->EXTPOLAR    = (1<<0);       // Configure EINTx as Falling Edge
 }
 
-void BindEINT0Handler()
-{
-    NVIC_SetVector((IRQn)(18), (uint32_t)PushButton_Handler);
-}
-
-void EnableEINT0()
-{
-    // EINT0 = 18
-    NVIC_EnableIRQ((IRQn_Type)(18));    /* Enable the EINT0 interrupt */
-}
-
-void FireInterrupt(uint32_t InterruptIndex)
-{
-    if (InterruptIndex < 0 || InterruptIndex > 111)
-        return;
-    
-    /**
-     * Bits 8:0 - 256 Interrupt values
-     * Values of bits 31:9 are reserved, so should not be read or touched
-     * Manual UM10360 - Page 92
-     */
-    NVIC->STIR |= (0xFF & InterruptIndex);
-}
 
 int main()
 {   
+    ValueType IQRNumber = 18;
     SystemInit();       // startup board in a predefined state
 
     InitPower();        // explicitly enable power
     InitPushButton();   // configure pushbutton to trigger the EINT0 interrupt
     InitLED();          // configure LED's GPIO pin to be an output & set its value to LOW
+    InitEINT0();        // configure, how the interrupt is triggered.
 
-    // switch between the encapsulated and non encapsulated variants
-    constexpr bool useEncapsulated = true;
-    if(useEncapsulated)
+    auto& vectorTable = InterruptVectorTable::getInstance();    // move vector table into singleton/RAM/ aligned memory block
+
+    // tell the controller to use the PushButton_Handler when the interrupt 18 = EINT0 is triggered
+    vectorTable.setCallback(IQRNumber, PushButton_Handler);
+
+    // allow the EINT0 inrettupt to be triggered
+    vectorTable.enableISR(IQRNumber);
+
+    // enable global interrupts
+    vectorTable.enableIRQ();
+
+    while(1)
     {
-        InitEINT0();                                                // init eint0
-        auto& vectorTable = InterruptVectorTable::getInstance();    // move vector table into singleton/RAM/ aligned memory block
-
-        // tell the controller to use the PushButton_Handler when the interrupt 18 = EINT0 is triggered
-        vectorTable.setCallback(18, PushButton_Handler);
-
-        // allow the EINT0 inrettupt to be triggered
-        vectorTable.enableISR(18);
-
-        while(1)
-        {
-            // trigger interrupt via software (easier testing, less configuration of buttons etc.)
-            vectorTable.triggerIRQ(18);
-            delay_ms(1000);
-        }   
-    }
-    else
-    {
-        InitRAMInterruptVectorTable();  // move vector table to ram
-        InitEINT0();                    // init eint0
-        BindEINT0Handler();             // make EINT0 execute PushButtonHandler on interrupt
-        EnableEINT0();                  // enable interrupt and bind to handler
-
-        while (1)
-        {
-            FireInterrupt(18);
-            delay_ms(500);
-        }
-    }   
+        // trigger interrupt via software (easier testing, less configuration of buttons etc.)
+        vectorTable.triggerIRQ(IQRNumber);
+        delay_ms(1000);
+    } 
 }
 
 #elif defined ARDUINO_UNO || defined MYAVR_BOARD_MK2
@@ -331,11 +264,24 @@ void InitEXTI0()
     }
 }
 
+void ClearEXTI0Condition()
+{
+    ENABLE(EXTI->PR, EXTI0_IRQn);
+}
+
 void ToggleLED()
 {
+    ValueType PD12 = 12;
+    
     // PD12 -> LED Pin
-    GPIOD->ODR ^= (1<<12); 		// toggle diodes
+    TOGGLE(GPIOD->ODR, PD12);
+    
+    // clear interrupt condition (EXTI Pending Bit Register)
+    // otherwise you will get tailchained interrupts.
+    ClearEXTI0Condition();
 }
+
+
 
 void FastBlinking()
 {
@@ -352,7 +298,7 @@ void SlowBlinking()
     {
         ToggleLED();
         ms_delay(200);
-    }    
+    }
 }
 
 void EXTI0_IRQHandler()
@@ -382,32 +328,24 @@ void EnableInterrupts()
 
 int main(void)
 {
-    constexpr bool useEncapsulated = true;
     ValueType IRQIndex = 6;
 
     InitGPIO();
     InitEXTI0();
-    if (useEncapsulated)
-    {
-        auto& VectorTable = InterruptVectorTable::getInstance();
-        VectorTable.setCallback(IRQIndex, SlowBlinking);
-        VectorTable.enableISR(IRQIndex);
-        VectorTable.enableIRQ();
-    }
-    else
-    {
-        NVIC_EnableIRQ((IRQn_Type)IRQIndex);
-        EnableInterrupts();
-    }
+
+    auto& VectorTable = InterruptVectorTable::getInstance();
+    VectorTable.setCallback(IRQIndex, ToggleLED);
+    
+    VectorTable.enableISR(IRQIndex);
+    NVIC_EnableIRQ((IRQn_Type)IRQIndex);
+    EnableInterrupts();
     
     
 
     while (1)
     {
-        /*
-        ms_delay(500);
+        ms_delay(1000);
         NVIC->STIR |= (0x1FF & IRQIndex);
-        */
     }
 
 }
