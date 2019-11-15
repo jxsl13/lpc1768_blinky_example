@@ -2,7 +2,7 @@
 #include <config.hpp>
 #include <hal/interrupt_config/ExternalInterrupt.hpp>
 
-enum class ExternalInterrupt::InterruptIndexType : ValueType {
+enum class ExternalInterrupt::IndexType : ValueType {
     IDX_INT0 = 0,
     IDX_INT1 = 1,
 };

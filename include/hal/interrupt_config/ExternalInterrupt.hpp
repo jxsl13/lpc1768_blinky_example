@@ -17,7 +17,7 @@ public:
      * @brief List of valid indices that can be used. 
      * We want to reduce the number of checks at runtime.
      */
-    enum class InterruptIndexType : ValueType;
+    enum class IndexType : ValueType;
 
     /**
      * @brief Construct a new External Interrupt object
@@ -25,7 +25,7 @@ public:
      * @param InterruptIndex EXTI[X]/INT[X]/EINT[X] -> X is the number, e.g. INT0 -> 0
      * @param Trigger 
      */
-    ExternalInterrupt(InterruptIndexType InterruptIndex, TriggerType Trigger)
+    ExternalInterrupt(IndexType InterruptIndex, TriggerType Trigger)
     {
         m_Index = InterruptIndex;
         m_Trigger = static_cast<ValueType>(Trigger); // in order to do less conversions late ron.
@@ -41,7 +41,7 @@ public:
      * 
      * @param InterruptIndex Valid index that exists for the specific plattform.
      */
-    void applyTo(InterruptIndexType InterruptIndex) const;
+    void applyTo(IndexType InterruptIndex) const;
 
     /**
      * @brief Apply the configuration to the at contruction passed 
@@ -56,7 +56,7 @@ public:
      *          The internal state is updated accordingly to hold that configuration.
      * @param InterruptIndex Index of the External Interrupt(see above).
      */
-    void retrieveFrom(InterruptIndexType InterruptIndex);
+    void retrieveFrom(IndexType InterruptIndex);
 
     /**
      * @brief Retrieve the configuration of the currently internally saved Interrupt Index.
@@ -72,7 +72,7 @@ public:
          * These are kept as ValueTypes in order to  
          * better work with them later on.
          */
-        InterruptIndexType  m_Index;
+        IndexType  m_Index;
         ValueType         m_Trigger;
 };
 

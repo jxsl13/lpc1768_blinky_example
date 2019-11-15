@@ -28,13 +28,13 @@ void Blinking(unsigned int ms, unsigned int times = 10)
     } 
 }
 
-using InterruptIndexType = ExternalInterrupt::InterruptIndexType;
+using IndexType = ExternalInterrupt::IndexType;
 using TriggerType = ExternalInterrupt::TriggerType;
 
 
 int main()
 {   
-    constexpr auto IDX_INT0 = InterruptIndexType::IDX_INT0;
+    constexpr auto IDX_INT0 = IndexType::IDX_INT0;
     constexpr auto EDGE_RISING = TriggerType::EDGE_RISING;
 
     ValueType IRQIndex = IRQ_INDEX;

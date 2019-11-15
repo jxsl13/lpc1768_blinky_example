@@ -7,7 +7,7 @@ extern "C" {
 #endif
 
 
-void ExternalInterrupt::applyTo(ExternalInterrupt::InterruptIndexType InterruptIndex) const
+void ExternalInterrupt::applyTo(ExternalInterrupt::IndexType InterruptIndex) const
 {
     ValueType Index = static_cast<ValueType>(InterruptIndex);
 
@@ -31,7 +31,7 @@ void ExternalInterrupt::applyTo(ExternalInterrupt::InterruptIndexType InterruptI
 
 }
 
-void ExternalInterrupt::retrieveFrom(ExternalInterrupt::InterruptIndexType InterruptIndex)
+void ExternalInterrupt::retrieveFrom(ExternalInterrupt::IndexType InterruptIndex)
 {
     ValueType Index = static_cast<ValueType>(InterruptIndex);
 
