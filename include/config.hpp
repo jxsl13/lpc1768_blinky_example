@@ -18,13 +18,16 @@
 
     #include <util/delay.h>
     #include <avr/interrupt.h>
-    #include <target/MYAVR_BOARD_MK2/interrupt_config/ExternalInterrupt.hpp>
 
     using ValueType = uint8_t;                          // megaAVR® Data Sheet - Page 1 - 8 Bit
     constexpr ValueType VectorsCount = 26;              // Page 66
     constexpr ValueType ValidInterruptCount = 25;       // without reset IRQ index 0
 
     constexpr ValueType IRQ_INDEX = 1;                  // INT0 Index
+
+    
+    #include <target/MYAVR_BOARD_MK2/interrupt_config/ExternalInterrupt.hpp>
+
 
 #elif defined STM32F407VG
 
