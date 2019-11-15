@@ -1,5 +1,4 @@
 #pragma once
-#include <config.hpp>
 #include <hal/interrupt_config/ExternalInterrupt.hpp>
 
 enum class ExternalInterrupt::IndexType : ValueType {
