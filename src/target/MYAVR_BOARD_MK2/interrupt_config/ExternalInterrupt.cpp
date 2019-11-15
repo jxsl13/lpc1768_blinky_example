@@ -1,23 +1,10 @@
-#include <hal/interrupt_config/ExternalInterrupt.hpp>
+#include "ExternalInterrupt.hpp"
 #include <utils/BitMacros.hpp>
 #include <config.hpp>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-enum class ExternalInterrupt::InterruptIndexType : ValueType {
-    IDX_INT0 = 0,
-    IDX_INT1 = 1,
-};
-
-
-enum class ExternalInterrupt::TriggerType : ValueType {
-    LEVEL_LOW       = 0,
-    LOGICAL_CHANGE  = 1,
-    EDGE_FALLING    = 3, 
-    EDGE_RISING     = 4,
-};
 
 
 void ExternalInterrupt::applyTo(ExternalInterrupt::InterruptIndexType InterruptIndex) const

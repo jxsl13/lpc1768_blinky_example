@@ -28,18 +28,21 @@ void Blinking(unsigned int ms, unsigned int times = 10)
     } 
 }
 
-using ExternalInterrupt::InterruptIndexType;
-using ExternalInterrupt::TriggerType;
+using InterruptIndexType = ExternalInterrupt::InterruptIndexType;
+using TriggerType = ExternalInterrupt::TriggerType;
+
 
 int main()
 {   
+    using InterruptIndexType::IDX_INT0;
+    using TriggerType::EDGE_RISING;
+
     ValueType IRQIndex = IRQ_INDEX;
     InitGPIO();         // Initialize Power, LED and Pushbutton
     //InitExtInt0();      // configure, how the interrupt is triggered(EINT0).
 
-  
     
-    ExternalInterrupt exti0 = {IDX_INT0, EDGE_RISING};
+    ExternalInterrupt exti0(IDX_INT0, EDGE_RISING);
 
     auto& vectorTable = InterruptVectorTable::getInstance();    // move vector table into singleton/RAM/ aligned memory block
     vectorTable.setCallback(IRQIndex, PushButton_Handler);
