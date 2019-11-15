@@ -44,7 +44,7 @@ class InterruptVectorTable
     /**
       * @brief Checks whether the given IRQNumber is valid.
       * 
-      * @param InterruptNumber 
+      * @param InterruptIndex 
       * @return true Is valid
       * @return false Is not valid
       */
@@ -81,10 +81,10 @@ class InterruptVectorTable
     /**
          * @brief 
          * 
-         * @param InterruptNumber 
+         * @param InterruptIndex 
          * @param Callback Function to be called, when the Interrupt is 
          */
-    bool setCallback(ValueType InterruptNumber, void (*Callback)(void));
+    bool setCallback(ValueType InterruptIndex, void (*Callback)(void));
 
     /**
          * @brief Enables interrupts globally
@@ -92,29 +92,46 @@ class InterruptVectorTable
     void enableIRQ();
 
     /**
-         * @brief Disables Interrupts globally.
-         */
+      * @brief Disables Interrupts globally.
+      */
     void disableIRQ();
 
-    /**
-         * @brief Disable interrupt at given InterruptNumber
-         * 
-         * @param InterruptNumber interrupt InterruptNumber, as defined in the manuals: >= 0
-         */
-    void enableISR(ValueType InterruptNumber);
+     /**
+      * @brief Returns whether interrupts are globally enabled.
+      * 
+      * @return true global interrupts are enabled
+      * @return false global interrupts are disabled.
+      */
+     bool isEnabled();
 
     /**
-         * @brief Disable an interrupt / interrupt service routine
-         * 
-         * @param InterruptNumber Is the InterruptNumber of the interrupt within the interrupt vctor table. 
-         *              Should be a ValueType greater than or equal to 0.
-         */
-    void disableISR(ValueType InterruptNumber);
+      * @brief Disable interrupt at given InterruptIndex
+      * 
+      * @param InterruptIndex interrupt InterruptIndex, as defined in the manuals: >= 0
+      */
+    void enableISR(ValueType InterruptIndex);
+
+    /**
+      * @brief Disable an interrupt / interrupt service routine
+      * 
+      * @param InterruptIndex Is the InterruptIndex of the interrupt within the interrupt vctor table. 
+      *              Should be a ValueType greater than or equal to 0.
+      */
+    void disableISR(ValueType InterruptIndex);
+
+     /**
+      * @brief Check if an Interrupt Service Routine is enabled or not.
+      * 
+      * @param InterruptIndex 
+      * @return true Is enabled.
+      * @return false Is not enabled.
+      */
+    bool isEnabled(ValueType InterruptIndex);
 
     /**
          * @brief Triggers a software interrupt request
          * 
-         * @param InterruptNumber 
+         * @param InterruptIndex 
          */
-    void triggerIRQ(ValueType InterruptNumber);
+    void triggerIRQ(ValueType InterruptIndex);
 };

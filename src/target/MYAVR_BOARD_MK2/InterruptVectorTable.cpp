@@ -225,6 +225,11 @@ void InterruptVectorTable::disableIRQ()
     cli();
 }
 
+bool InterruptVectorTable::isEnabled()
+{
+    return IS_SET(SREG, 7);
+}
+
 bool InterruptVectorTable::setCallback(ValueType InterruptIndex, void (*Callback)(void))
 {
     // setting index 0 -> not supported
@@ -241,10 +246,10 @@ void InterruptVectorTable::enableISR(ValueType InterruptIndex)
     if (InterruptIndex <= 0 || VectorsCount <= InterruptIndex)
         return;
 
-    volatile ValueType* RegisterPtr = s_InterruptEnableBitMap[InterruptIndex].m_Register;
+    volatile ValueType* pRegister = s_InterruptEnableBitMap[InterruptIndex].m_Register;
     ValueType Bit = s_InterruptEnableBitMap[InterruptIndex].m_Bits[0];
 
-    ENABLE(*RegisterPtr, Bit);
+    ENABLE(*pRegister, Bit);
 }
 
 void InterruptVectorTable::disableISR(ValueType InterruptIndex)
@@ -252,11 +257,21 @@ void InterruptVectorTable::disableISR(ValueType InterruptIndex)
     if (InterruptIndex <= 0 || VectorsCount <= InterruptIndex)
         return;
 
-    volatile ValueType* RegisterPtr = s_InterruptEnableBitMap[InterruptIndex].m_Register;
+    volatile ValueType* pRegister = s_InterruptEnableBitMap[InterruptIndex].m_Register;
     ValueType Bit = s_InterruptEnableBitMap[InterruptIndex].m_Bits[0];
 
-    DISABLE(*RegisterPtr, Bit);
+    DISABLE(*pRegister, Bit);
 }
+
+bool InterruptVectorTable::isEnabled(ValueType InterruptIndex)
+{
+
+    volatile ValueType* pRegister = s_InterruptEnableBitMap[InterruptIndex].m_Register;
+    ValueType Bit = s_InterruptEnableBitMap[InterruptIndex].m_Bits[0];
+
+    return IS_SET(*pRegister, Bit);
+}
+
 
 void InterruptVectorTable::triggerIRQ(ValueType InterruptIndex)
 {
@@ -266,7 +281,7 @@ void InterruptVectorTable::triggerIRQ(ValueType InterruptIndex)
         return;
     
     // check if interrupt is globally enabled as well as the specific ISR
-    ValueType* pRegister = s_InterruptEnableBitMap[InterruptIndex].m_Register;
+    volatile ValueType* pRegister = s_InterruptEnableBitMap[InterruptIndex].m_Register;
     ValueType Bit = s_InterruptEnableBitMap[InterruptIndex].m_Bits[0];
 
     if(!IS_SET(SREG, 7) || !IS_SET(*pRegister, Bit))

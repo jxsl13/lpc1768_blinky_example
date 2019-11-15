@@ -91,6 +91,20 @@ void InterruptVectorTable::disableIRQ()
     __disable_irq();
 }
 
+bool InterruptVectorTable::isEnabled()
+{
+    /**
+     * PRIMASK is a 1-bit-wide interrupt mask register. When set, it blocks all interrupts apart from the non-maskable 
+     * interrupt (NMI) and the hard fault exception. The PRIMASK prevents activation of all exceptions with configurable 
+     * priority.
+     * https://www.keil.com/pack/doc/CMSIS/Core/html/group__Core__Register__gr.html#ga799b5d9a2ae75e459264c8512c7c0e02
+     * 
+     * 1 -> global interrupts are enabled
+     * 0 -> global interrupts are disabled
+     * */
+    return __get_PRIMASK() == 0;
+}
+
 bool InterruptVectorTable::setCallback(ValueType InterruptIndex, void (*Callback)(void))
 {   
     /**
@@ -115,6 +129,12 @@ void InterruptVectorTable::disableISR(ValueType InterruptIndex)
 {
     NVIC_DisableIRQ(static_cast<IRQn_Type>(InterruptIndex));
 }
+
+bool InterruptVectorTable::isEnabled(ValueType InterruptIndex)
+{
+    return NVIC_GetEnableIRQ(static_cast<IRQn_Type>(InterruptIndex));
+}
+
 
 void InterruptVectorTable::triggerIRQ(ValueType InterruptIndex)
 {
