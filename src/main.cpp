@@ -16,6 +16,16 @@ extern void delay_ms(unsigned int);
 extern void InitGPIO();
 extern void InitExtInt0();
 extern void PushButton_Handler();
+extern void ToggleLED();
+
+void Blinking(unsigned int ms, unsigned int times = 10)
+{
+    for (ValueType i = 0; i < times; i++)
+    {
+        delay_ms(ms);
+        ToggleLED();
+    } 
+}
 
 
 int main()
@@ -27,8 +37,24 @@ int main()
     auto& vectorTable = InterruptVectorTable::getInstance();    // move vector table into singleton/RAM/ aligned memory block
     vectorTable.setCallback(IRQIndex, PushButton_Handler);
     vectorTable.enableISR(IRQIndex);
+    vectorTable.disableIRQ();
+
+    // check global IRQs
+    if (!vectorTable.isEnabled())
+    {
+        Blinking(100, 20);
+    }
+    delay_ms(10000);
+
+    // check specific ISR
+    if (vectorTable.isEnabled(IRQIndex))
+    {
+        Blinking(100, 20);
+    }
+  
     vectorTable.enableIRQ();
 
+    delay_ms(10000);
     while(1)
     {
         vectorTable.triggerIRQ(IRQIndex);
