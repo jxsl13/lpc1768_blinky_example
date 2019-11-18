@@ -26,9 +26,9 @@ extern void ToggleLED();
 
 void Blinking(unsigned int times = 5, unsigned int ms = 300)
 {
-    for (ValueType i = 0; i < times; i++)
+    for (ValueType i = 0; i < times * 2; i++)
     {
-        delay_ms(ms * 2);
+        delay_ms(ms);
         ToggleLED();
     } 
 }
@@ -36,18 +36,24 @@ void Blinking(unsigned int times = 5, unsigned int ms = 300)
 using IndexType = ExternalInterrupt::IndexType;
 using TriggerType = ExternalInterrupt::TriggerType;
 
+// compile time initialization, less to write.
+constexpr IndexType init(const int param)
+{
+    return static_cast<IndexType>(param);
+}
+
 
 int main()
 {   
-    constexpr auto IDX_INT0 = static_cast<IndexType>(IRQ_INDEX);
-    constexpr auto EDGE_RISING = TriggerType::EDGE_RISING;
+    constexpr IndexType EINT0 = init(0);
+    constexpr TriggerType EDGE_RISING = TriggerType::EDGE_RISING;
 
     IRQType IRQIndex = static_cast<IRQType>(IRQ_INDEX);
     InitGPIO();         // Initialize Power, LED and Pushbutton
     //InitExtInt0();      // configure, how the interrupt is triggered(EINT0).
 
     
-    ExternalInterrupt exti0 = {IDX_INT0, EDGE_RISING};
+    ExternalInterrupt exti0 = {EINT0, EDGE_RISING};
     exti0.apply();
 
 
@@ -57,24 +63,12 @@ int main()
 
     vectorTable.enableIRQ();
 
-    delay_ms(5000);
-    Blinking(static_cast<unsigned int>(exti0.getTrigger()));
-    
-
-    delay_ms(10000);
-    exti0.retrieve();
-    unsigned int result = static_cast<unsigned int>(exti0.getTrigger());
-    Blinking(result);
-
-    if (!result)
-    {
-        ToggleLED();
-    }
     
 
     while(1)
     {
-        
+        delay_ms(500);
+        vectorTable.triggerIRQ(IRQIndex);
     } 
 }
 

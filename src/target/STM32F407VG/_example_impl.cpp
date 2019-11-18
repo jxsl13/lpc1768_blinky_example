@@ -59,7 +59,7 @@ void InitGPIO()
         let Port be A and EXTIX be 1,
         this will lead to PA1 to trigger the interupt EXTI1
     */
-    SYSCFG->EXTICR[EXTIX % 4] |= (Port << (EXTIX * 4));
+    SYSCFG->EXTICR[EXTIX / 4] |= (Port << (EXTIX % 4));
 }
 
 
