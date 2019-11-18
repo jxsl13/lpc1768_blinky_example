@@ -68,6 +68,21 @@ public:
         retrieveFrom(m_Index);
     };
 
+
+    /**
+     * @brief Clear the pending bit of the given external interrupt index.
+     * @param InterruptIndex 
+     */
+    void clearPendingBitOf(ExternalInterrupt::IndexType InterruptIndex);
+
+    /**
+     * @brief Interrupts cause specific bits to be set in a register, 
+     * which cause either the interrupt to trigger again, or the other way around,
+     * they caus ethe interrupt to trigger continuously, if the bit is not cleared.
+     * Both cases should be cleared with this member function.
+     */
+    void clearPendingBit() {clearPendingBitOf(m_Index);};
+
     private:
         /**
          * These are kept as ValueTypes in order to  
