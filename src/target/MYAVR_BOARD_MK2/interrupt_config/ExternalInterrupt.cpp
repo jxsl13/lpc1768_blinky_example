@@ -7,23 +7,19 @@
 extern "C" {
 #endif
 
-/**
- * @brief Number of external interrupts
- */
-constexpr ValueType size = 2;
 
 void ExternalInterrupt::applyTo(ExternalInterrupt::IndexType InterruptIndex) const
 {
     ValueType Index = static_cast<ValueType>(InterruptIndex);
     
-    EICRA |= ((m_Trigger & 0b11) << (Index * size));
+    EICRA |= ((m_Trigger & 0b11) << (Index * 2));
 
 }
 
 void ExternalInterrupt::retrieveFrom(ExternalInterrupt::IndexType InterruptIndex)
 {
     ValueType Index = static_cast<ValueType>(InterruptIndex);
-   m_Trigger = (EICRA >> (size - (Index * size))) & 0b11;
+    m_Trigger = (EICRA >> (Index * 2)) & 0b11;
 }
 
 void ExternalInterrupt::clearPendingBitOf(ExternalInterrupt::IndexType InterruptIndex)
