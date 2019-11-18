@@ -1,10 +1,9 @@
-#include <config.hpp>
+#include "Interrupt.hpp"
 #include <utils/BitMacros.hpp>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 enum PortX : ValueType
 {
         PA = 0,

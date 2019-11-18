@@ -1,8 +1,6 @@
 #pragma once
 
-#include <config.hpp>
-#include "ValidIRQTypes.hpp"
-
+#include "IRQType.hpp"
 
 /**
  * @brief If the available interrupt indices do not construct a continuous range, 
@@ -50,10 +48,9 @@ class InterruptVectorTable
       */
 
    public:
-    enum IRQTypes : ValueType; // forward declaration of enums with type/size specification.
-    const static ValidIRQTypes s_ValidIRQTypes;
+    //enum class IRQTypes : ValueType; // forward declaration of enums with type/size specification.
+    //const static ValidIRQTypes s_ValidIRQTypes;
 
-    bool IsValidIRQType(const ValueType IRQNumber) { return s_ValidIRQTypes.IsValidIRQType(IRQNumber); };
 
     /**
          * @brief Deleted copy constructor
@@ -79,16 +76,16 @@ class InterruptVectorTable
     }
 
     /**
-         * @brief 
-         * 
-         * @param InterruptIndex 
-         * @param Callback Function to be called, when the Interrupt is 
-         */
-    bool setCallback(ValueType InterruptIndex, void (*Callback)(void));
+     * @brief 
+     * 
+     * @param InterruptIndex 
+     * @param Callback Function to be called, when the Interrupt is 
+     */
+    void setCallback(IRQType InterruptIndex, void (*Callback)(void));
 
     /**
-         * @brief Enables interrupts globally
-         */
+     * @brief Enables interrupts globally
+     */
     void enableIRQ();
 
     /**
@@ -109,7 +106,7 @@ class InterruptVectorTable
       * 
       * @param InterruptIndex interrupt InterruptIndex, as defined in the manuals: >= 0
       */
-    void enableISR(ValueType InterruptIndex);
+    void enableISR(IRQType InterruptIndex);
 
     /**
       * @brief Disable an interrupt / interrupt service routine
@@ -117,7 +114,7 @@ class InterruptVectorTable
       * @param InterruptIndex Is the InterruptIndex of the interrupt within the interrupt vctor table. 
       *              Should be a ValueType greater than or equal to 0.
       */
-    void disableISR(ValueType InterruptIndex);
+    void disableISR(IRQType InterruptIndex);
 
      /**
       * @brief Check if an Interrupt Service Routine is enabled or not.
@@ -126,12 +123,12 @@ class InterruptVectorTable
       * @return true Is enabled.
       * @return false Is not enabled.
       */
-    bool isEnabled(ValueType InterruptIndex);
+    bool isEnabled(IRQType InterruptIndex);
 
     /**
          * @brief Triggers a software interrupt request
          * 
          * @param InterruptIndex 
          */
-    void triggerIRQ(ValueType InterruptIndex);
+    void triggerIRQ(IRQType InterruptIndex);
 };

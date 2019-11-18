@@ -1,5 +1,4 @@
 #pragma once
-#include <config.hpp>
 
 
 class ExternalInterrupt
@@ -28,10 +27,12 @@ public:
     ExternalInterrupt(IndexType InterruptIndex, TriggerType Trigger)
     {
         m_Index = InterruptIndex;
-        m_Trigger = static_cast<ValueType>(Trigger); // in order to do less conversions late ron.
+        m_Trigger = static_cast<ValueType>(Trigger); // in order to do less conversions later on.
     };
 
     ~ExternalInterrupt();
+
+    TriggerType getTrigger(){return static_cast<TriggerType>(m_Trigger); }
 
 
     /**
@@ -73,6 +74,6 @@ public:
          * better work with them later on.
          */
         IndexType  m_Index;
-        ValueType         m_Trigger;
+        ValueType  m_Trigger;
 };
 

@@ -1,25 +1,8 @@
-
+#include "Interrupt.hpp"
 #include <string.h>
-#include <hal/InterruptVectorTable.hpp>
 #include <utils/BitMacros.hpp>
 #include <utils/RegisterBits.hpp>
 
-#include "InterruptTypes.hpp"
-
-/**
- * @brief List of valid IRQ Index numbers
- * 
- */
-const ValidIRQTypes InterruptVectorTable::s_ValidIRQTypes = {
-    ValidInterruptCount,
-    {  
-        1,  2,  3,  4,  5, 
-        6,  7,  8,  9, 10, 
-        11, 12, 13, 14, 15, 
-        16, 17, 18, 19, 20, 
-        21, 22, 23, 24, 25
-    }
-};
 
 const static RegisterBits<1> s_InterruptEnableBitMap[VectorsCount] = {
     {0x0, 0}, //
@@ -230,64 +213,58 @@ bool InterruptVectorTable::isEnabled()
     return IS_SET(SREG, 7);
 }
 
-bool InterruptVectorTable::setCallback(ValueType InterruptIndex, void (*Callback)(void))
+void InterruptVectorTable::setCallback(IRQType InterruptIndex, void (*Callback)(void))
 {
-    // setting index 0 -> not supported
-    if (InterruptIndex <= 0 || VectorsCount <= InterruptIndex)
-        return false;
-
-    // set callback
-    s_VectorTable[InterruptIndex] = Callback;
-    return true;
+    /**
+     * All needed checks are done at compile time, especially whether 
+     * InterruptIndex is actually a valid Interrupt index
+     */
+    s_VectorTable[static_cast<ValueType>(InterruptIndex)] = Callback;
 }
 
-void InterruptVectorTable::enableISR(ValueType InterruptIndex)
+void InterruptVectorTable::enableISR(IRQType InterruptIndex)
 {
-    if (InterruptIndex <= 0 || VectorsCount <= InterruptIndex)
-        return;
+    ValueType index = static_cast<ValueType>(InterruptIndex);
 
-    volatile ValueType* pRegister = s_InterruptEnableBitMap[InterruptIndex].m_Register;
-    ValueType Bit = s_InterruptEnableBitMap[InterruptIndex].m_Bits[0];
+    volatile ValueType* pRegister = s_InterruptEnableBitMap[index].m_Register;
+    ValueType Bit = s_InterruptEnableBitMap[index].m_Bits[0];
 
     ENABLE(*pRegister, Bit);
 }
 
-void InterruptVectorTable::disableISR(ValueType InterruptIndex)
+void InterruptVectorTable::disableISR(IRQType InterruptIndex)
 {
-    if (InterruptIndex <= 0 || VectorsCount <= InterruptIndex)
-        return;
+    ValueType index = static_cast<ValueType>(InterruptIndex);
 
-    volatile ValueType* pRegister = s_InterruptEnableBitMap[InterruptIndex].m_Register;
-    ValueType Bit = s_InterruptEnableBitMap[InterruptIndex].m_Bits[0];
+    volatile ValueType* pRegister = s_InterruptEnableBitMap[index].m_Register;
+    ValueType Bit = s_InterruptEnableBitMap[index].m_Bits[0];
 
     DISABLE(*pRegister, Bit);
 }
 
-bool InterruptVectorTable::isEnabled(ValueType InterruptIndex)
+bool InterruptVectorTable::isEnabled(IRQType InterruptIndex)
 {
-
-    volatile ValueType* pRegister = s_InterruptEnableBitMap[InterruptIndex].m_Register;
-    ValueType Bit = s_InterruptEnableBitMap[InterruptIndex].m_Bits[0];
+    ValueType index = static_cast<ValueType>(InterruptIndex);
+    
+    volatile ValueType* pRegister = s_InterruptEnableBitMap[index].m_Register;
+    ValueType Bit = s_InterruptEnableBitMap[index].m_Bits[0];
 
     return IS_SET(*pRegister, Bit);
 }
 
 
-void InterruptVectorTable::triggerIRQ(ValueType InterruptIndex)
+void InterruptVectorTable::triggerIRQ(IRQType InterruptIndex)
 {
 
-    // check if index is valid
-    if (InterruptIndex < 0 || VectorsCount <= InterruptIndex)
-        return;
-    
+    ValueType index = static_cast<ValueType>(InterruptIndex);
+
     // check if interrupt is globally enabled as well as the specific ISR
-    volatile ValueType* pRegister = s_InterruptEnableBitMap[InterruptIndex].m_Register;
-    ValueType Bit = s_InterruptEnableBitMap[InterruptIndex].m_Bits[0];
+    volatile ValueType* pRegister = s_InterruptEnableBitMap[index].m_Register;
+    ValueType Bit = s_InterruptEnableBitMap[index].m_Bits[0];
 
     if(!IS_SET(SREG, 7) || !IS_SET(*pRegister, Bit))
         return;
 
     // call the function 
-    s_VectorTable[InterruptIndex]();
-    
+    s_VectorTable[index](); 
 }

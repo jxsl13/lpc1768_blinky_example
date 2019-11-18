@@ -1,8 +1,11 @@
 #pragma once
 
-#include <hal/InterruptVectorTable.hpp>
+#include "Interrupt.hpp"
 
-enum InterruptVectorTable::IRQTypes : ValueType
+/**
+ * @brief Enum classes force the type to be checked explicitly at compile time.
+ */
+enum class IRQType : ValueType
 {
     //RESET_IRQn = 0,               // Not available.
     INT0_IRQn               = 1,

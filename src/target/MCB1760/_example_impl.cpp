@@ -1,4 +1,4 @@
-#include <config.hpp>
+#include "Interrupt.hpp"
 #include <utils/BitMacros.hpp>
 
 #ifdef __cplusplus

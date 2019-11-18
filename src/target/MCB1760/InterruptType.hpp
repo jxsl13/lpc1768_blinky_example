@@ -1,9 +1,6 @@
 #pragma once
 
-#include <hal/InterruptVectorTable.hpp>
-
-
-enum InterruptVectorTable::IRQTypes : ValueType {
+enum class IRQType : ValueType {
     /******  Cortex-M3 Processor Exceptions Numbers ***************************************************/
     
     // Exceptions are not supported, because they do not explicitly define expected or wanted behaviour, 

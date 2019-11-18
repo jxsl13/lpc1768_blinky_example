@@ -1,19 +1,5 @@
-#include "LPC17xx.h"
-#include "InterruptTypes.hpp"
-#include <hal/InterruptVectorTable.hpp>
+#include "Interrupt.hpp"
 #include <cstring>
-
-
-const ValidIRQTypes InterruptVectorTable::s_ValidIRQTypes = {
-    ValidInterruptCount,
-    { 
-        0,  1,  2,  3,  4,  5,  6, 
-        7,  8,  9, 10, 11, 12, 13, 
-        14, 15, 16, 17, 18, 19, 20, 
-        21, 22, 23, 24, 25, 26, 27, 
-        28, 29, 30, 31, 32, 33, 34
-    }
-};
 
 
 InterruptVectorTable::InterruptVectorTable()
@@ -25,7 +11,7 @@ InterruptVectorTable::InterruptVectorTable()
      * Also LPC1768 needs the vector table to be relocated into ram in order to dynamically
      * change the function pointers.
      */
-    alignas(sizeof(ValueType) * VectorsCount) static ValueType s_VectorTable[VectorsCount];
+    alignas(sizeof(ValueType) * Alignment) static ValueType s_VectorTable[VectorsCount];
     
     // copy vector table to ram location
     std::memcpy(s_VectorTable, VectorTable, sizeof(ValueType) * VectorsCount); 
@@ -92,61 +78,42 @@ bool InterruptVectorTable::isEnabled()
     return __get_PRIMASK() == 0;
 }
 
-bool InterruptVectorTable::setCallback(ValueType InterruptIndex, void (*Callback)(void))
+void InterruptVectorTable::setCallback(IRQType InterruptIndex, void (*Callback)(void))
 {   
-    /**
-     * 
-     * It is not possible to unwrap a std::function in order to extract the function pointer! 
-     * Thus one can only use the raw C function pointer
-     * 
-     * LPC allows a range of [0:111] as InterruptIndex
-     */
-    if (InterruptIndex < 0 || 111 <= InterruptIndex)
-        return false;
+    ValueType index = static_cast<ValueType>(InterruptIndex);
     
-    //s_VectorTable[InterruptIndex + NVIC_USER_IRQ_OFFSET] = reinterpret_cast<ValueType>(Callback);
-
-    m_VectorTable[InterruptIndex + NVIC_USER_IRQ_OFFSET] = reinterpret_cast<ValueType>(Callback);
-    
-    //NVIC_SetVector((IRQn)(InterruptIndex), (ValueType)Callback);
+    m_VectorTable[index + NVIC_USER_IRQ_OFFSET] = reinterpret_cast<ValueType>(Callback);
     
     /**
-     * same as:
-     * 
-     * NVIC_SetVector((IRQn)(InterruptIndex), (ValueType)Callback);
+     * Same as:
+     * NVIC_SetVector((IRQn)(index), (ValueType)Callback);
      */
 
-    return true;
 }
 
-void InterruptVectorTable::enableISR(ValueType InterruptIndex)
+void InterruptVectorTable::enableISR(IRQType InterruptIndex)
 {
     NVIC_EnableIRQ(static_cast<IRQn_Type>(InterruptIndex));
 }
 
-void InterruptVectorTable::disableISR(ValueType InterruptIndex)
+void InterruptVectorTable::disableISR(IRQType InterruptIndex)
 {
     NVIC_DisableIRQ(static_cast<IRQn_Type>(InterruptIndex));
 }
 
-bool InterruptVectorTable::isEnabled(ValueType InterruptIndex)
+bool InterruptVectorTable::isEnabled(IRQType InterruptIndex)
 {
     return NVIC_GetEnableIRQ(static_cast<IRQn_Type>(InterruptIndex));
 }
 
-void InterruptVectorTable::triggerIRQ(ValueType InterruptIndex)
+void InterruptVectorTable::triggerIRQ(IRQType InterruptIndex)
 {
-    /**
-     * LPC allows a range of [0:111] as InterruptIndex
-     */
-    if (InterruptIndex < 0 || InterruptIndex > 111)
-        return;
-    
+    ValueType IRQIndex = static_cast<ValueType>(InterruptIndex);
     /**
      * Bits 8:0 - 256 Interrupt values (binary 0b111111111 -> 0x1FF)
      * Values of bits 31:9 are reserved, so should not be read or touched
      * Manual UM10360 - Page 92
      */
-    NVIC->STIR |= (0x1FF & InterruptIndex);
+    NVIC->STIR |= (0x1FF & IRQIndex);
 }
 
