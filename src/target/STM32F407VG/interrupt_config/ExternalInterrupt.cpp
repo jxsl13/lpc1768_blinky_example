@@ -13,6 +13,9 @@ constexpr ValueType size = 4;
 void ExternalInterrupt::applyTo(ExternalInterrupt::IndexType InterruptIndex) const
 {
     ValueType Index = static_cast<ValueType>(InterruptIndex);
+
+    ENABLE(EXTI->IMR, Index);  // InterruptMaskRegister -> Trigger interrupt/Callback
+    ENABLE(EXTI->EMR, Index);  // EventMaskRegister     -> Triggers event/no callback
     
     ValueType FallingEdge   = m_Trigger & 0b01;
     ValueType RisingEdge    = m_Trigger & 0b10;
