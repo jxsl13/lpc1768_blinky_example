@@ -30,7 +30,8 @@ public:
         m_Trigger = static_cast<ValueType>(Trigger); // in order to do less conversions later on.
     };
 
-    ~ExternalInterrupt();
+    ExternalInterrupt(IndexType InterruptIndex) : ExternalInterrupt(InterruptIndex, (TriggerType)0) {};
+
 
     TriggerType getTrigger(){return static_cast<TriggerType>(m_Trigger); }
 
