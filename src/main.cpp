@@ -1,11 +1,20 @@
 
 
 #if defined MCB1760
-    #include <target/MCB1760/Interrupt.hpp>
+
+    #include <target/MCB1760/Interrupt.hpp>             // Target specific interrupt header
+    constexpr ValueType IRQ_INDEX = 18;                 // EINT0 Index
+
 #elif  defined ARDUINO_UNO || defined MYAVR_BOARD_MK2
-    #include <target/MYAVR_BOARD_MK2/Interrupt.hpp>
+
+    #include <target/MYAVR_BOARD_MK2/Interrupt.hpp>     // Target specific interrupt header
+    constexpr ValueType IRQ_INDEX = 1;                  // INT0 Index
+
 #elif defined STM32F407VG
-    #include <target/STM32F407VG/Interrupt.hpp>
+
+    #include <target/STM32F407VG/Interrupt.hpp>         // Target specific interrupt header
+    constexpr ValueType IRQ_INDEX = 6;                  // EXTI0 Index
+
 #endif // include platform specific headers.
 
 

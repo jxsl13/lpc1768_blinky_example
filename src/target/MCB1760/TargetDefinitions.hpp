@@ -20,8 +20,3 @@ constexpr ValueType Alignment = 256;
 
  */
 constexpr ValueType VectorsCount = 35 + 16;
-
-/**
- * For testing purposes, this defines one specific interrupt.
- */
-constexpr ValueType IRQ_INDEX = 18;                 // EINT0 Index
