@@ -9,8 +9,7 @@
 /**
  * Interface definitions
  */
-#include <hal/InterruptVectorTable.hpp>
-#include <hal/interrupt_config/ExternalInterrupt.hpp>
+#include <hal/Interrupt>
 
 
 /**

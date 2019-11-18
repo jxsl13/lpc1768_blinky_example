@@ -1,7 +1,5 @@
 #pragma once
 
-#include "IRQType.hpp"
-
 /**
  * @brief If the available interrupt indices do not construct a continuous range, 
  * one could force checks by wrapping code segments into this macro.
