@@ -46,6 +46,8 @@ constexpr IndexType init(const int param)
 int main()
 {   
     constexpr IndexType EINT0 = init(0);
+    constexpr IndexType EINT1 = init(1);
+    constexpr TriggerType EDGE_FALLING = TriggerType::EDGE_FALLING;
     constexpr TriggerType EDGE_RISING = TriggerType::EDGE_RISING;
 
     IRQType IRQIndex = static_cast<IRQType>(IRQ_INDEX);
@@ -53,8 +55,11 @@ int main()
     //InitExtInt0();      // configure, how the interrupt is triggered(EINT0).
 
     
-    ExternalInterrupt exti0 = {EINT0, EDGE_RISING};
+    ExternalInterrupt exti0 = {EINT0, EDGE_FALLING};
+    ExternalInterrupt exti1 = {EINT1, EDGE_RISING};
+    
     exti0.apply();
+    exti1.apply();
 
 
     auto& vectorTable = InterruptVectorTable::getInstance();    // move vector table into singleton/RAM/ aligned memory block
@@ -63,12 +68,13 @@ int main()
 
     vectorTable.enableIRQ();
 
-    
+    exti0.retrieveFrom(EINT1);
+    Blinking((unsigned int)exti0.getTrigger());
 
     while(1)
     {
-        delay_ms(500);
-        vectorTable.triggerIRQ(IRQIndex);
+        // delay_ms(500);
+        // vectorTable.triggerIRQ(IRQIndex);
     } 
 }
 

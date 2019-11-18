@@ -39,7 +39,7 @@ enum class ExternalInterrupt::IndexType : ValueType {
  *      0           1   falling edge triggers the interrupt
  *      1           0   rising edge triggers the interuupt
  *      1           1   both edges trigger the interrupt
- * 
+ * TODO: measuring seems to yield the result that falling & rising edge are swapped!
  */
 enum class ExternalInterrupt::TriggerType : ValueType {
     EDGE_FALLING            = 1,
