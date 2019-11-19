@@ -4,14 +4,20 @@
     #include <target/MCB1760/Interrupt.hpp>             // Target specific interrupt header
 
     constexpr ExternalInterrupt::IndexType EINT0 = ExternalInterrupt::IndexType::EINT0;
-    constexpr ExternalInterrupt::IndexType EINT1 = ExternalInterrupt:ExternalInterrupt:::IndexType::EINT1;
+    constexpr ExternalInterrupt::IndexType EINT1 = ExternalInterrupt::ExternalInterrupt::IndexType::EINT1;
+
+    constexpr IRQType IRQ_EINT0 = IRQType::EINT0_IRQn;
+    constexpr IRQType IRQ_EINT1 = IRQType::EINT1_IRQn;
 
 #elif  defined ARDUINO_UNO || defined MYAVR_BOARD_MK2
 
     #include <target/MYAVR_BOARD_MK2/Interrupt.hpp>     // Target specific interrupt header
 
-    constexpr ExternalInterrupt::IndexType EINT0 = ExternalInterrupt::IndexType::INT0;
-    constexpr ExternalInterrupt::IndexType EINT1 = ExternalInterrupt::IndexType::INT1;
+    constexpr ExternalInterrupt::IndexType EINT0 = ExternalInterrupt::IndexType::EINT0;
+    constexpr ExternalInterrupt::IndexType EINT1 = ExternalInterrupt::IndexType::EINT1;
+
+    constexpr IRQType IRQ_EINT0 = IRQType::INT0_IRQn;
+    constexpr IRQType IRQ_EINT1 = IRQType::INT1_IRQn;
 
 #elif defined STM32F407VG
 
@@ -19,6 +25,9 @@
 
     constexpr ExternalInterrupt::IndexType EINT0 = ExternalInterrupt::IndexType::EXTI0_PA0;
     constexpr ExternalInterrupt::IndexType EINT1 = ExternalInterrupt::IndexType::EXTI3_PB3;
+
+    constexpr IRQType IRQ_EINT0 = IRQType::EXTI0_IRQn;
+    constexpr IRQType IRQ_EINT1 = IRQType::EXTI3_IRQn;
 
 #endif // include platform specific headers.
 
@@ -74,11 +83,11 @@ int main()
     exti1_cfg.apply();
 
     auto& vectorTable = InterruptVectorTable::getInstance();    // move vector table into singleton/RAM/ aligned memory block
-    vectorTable.setCallback(IRQType::EXTI0_IRQn, PushButton_Handler);
-    vectorTable.setCallback(IRQType::EXTI3_IRQn, PushButton_Handler);
+    vectorTable.setCallback(IRQ_EINT0, PushButton_Handler);
+    vectorTable.setCallback(IRQ_EINT1, PushButton_Handler);
     
-    vectorTable.enableISR(IRQType::EXTI0_IRQn);
-    vectorTable.enableISR(IRQType::EXTI3_IRQn);
+    vectorTable.enableISR(IRQ_EINT0);
+    vectorTable.enableISR(IRQ_EINT1);
 
     vectorTable.enableIRQ();
 

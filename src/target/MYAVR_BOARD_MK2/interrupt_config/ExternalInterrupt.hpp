@@ -3,8 +3,8 @@
 #include "../Interrupt.hpp" // all needed includes, interface, ValueType, etc.
 
 enum class ExternalInterrupt::IndexType : ValueType {
-    INT0 = 0,
-    INT1 = 1,
+    EINT0 = 0,
+    EINT1 = 1,
 };
 
 

@@ -3,8 +3,11 @@
 #include <utils/BitMacros.hpp>
 #include <utils/RegisterBits.hpp>
 
-
-const static RegisterBits<1> s_InterruptEnableBitMap[VectorsCount] = {
+/**
+ * @brief Evaluated at compile time, static(accessible only from within this cpp file), 
+ * immutable
+ */
+constexpr const static RegisterBits<1> s_InterruptEnableBitMap[VectorsCount] = {
     {0x0, 0}, //
     {&EIMSK, INT0},
     {&EIMSK, INT1},
