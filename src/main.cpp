@@ -1,19 +1,24 @@
 
-
 #if defined MCB1760
 
     #include <target/MCB1760/Interrupt.hpp>             // Target specific interrupt header
-    constexpr ValueType IRQ_INDEX = 18;                 // EINT0 Index
+
+    constexpr ExternalInterrupt::IndexType EINT0 = ExternalInterrupt::IndexType::EINT0;
+    constexpr ExternalInterrupt::IndexType EINT1 = ExternalInterrupt:ExternalInterrupt:::IndexType::EINT1;
 
 #elif  defined ARDUINO_UNO || defined MYAVR_BOARD_MK2
 
     #include <target/MYAVR_BOARD_MK2/Interrupt.hpp>     // Target specific interrupt header
-    constexpr ValueType IRQ_INDEX = 1;                  // INT0 Index
+
+    constexpr ExternalInterrupt::IndexType EINT0 = ExternalInterrupt::IndexType::INT0;
+    constexpr ExternalInterrupt::IndexType EINT1 = ExternalInterrupt::IndexType::INT1;
 
 #elif defined STM32F407VG
 
     #include <target/STM32F407VG/Interrupt.hpp>         // Target specific interrupt header
-    constexpr ValueType IRQ_INDEX = 6;                  // EXTI0 Index
+
+    constexpr ExternalInterrupt::IndexType EINT0 = ExternalInterrupt::IndexType::EXTI0_PA0;
+    constexpr ExternalInterrupt::IndexType EINT1 = ExternalInterrupt::IndexType::EXTI3_PB3;
 
 #endif // include platform specific headers.
 
@@ -54,31 +59,28 @@ constexpr IndexType init(const int param)
 
 int main()
 {   
-    constexpr IndexType EINT0 = init(0);
-    constexpr IndexType EINT1 = init(1);
+    
     constexpr TriggerType EDGE_FALLING = TriggerType::EDGE_FALLING;
     constexpr TriggerType EDGE_RISING = TriggerType::EDGE_RISING;
 
-    IRQType IRQIndex = static_cast<IRQType>(IRQ_INDEX);
+
     InitGPIO();         // Initialize Power, LED and Pushbutton
-    //InitExtInt0();      // configure, how the interrupt is triggered(EINT0).
 
     
-    ExternalInterrupt exti0 = {EINT0, EDGE_FALLING};
-    ExternalInterrupt exti1 = {EINT1, EDGE_RISING};
-    
-    exti0.apply();
-    exti1.apply();
+    ExternalInterrupt exti0_cfg = {EINT0, EDGE_RISING}; 
+    ExternalInterrupt exti1_cfg = {EINT1, EDGE_FALLING};
 
+    exti0_cfg.apply();
+    exti1_cfg.apply();
 
     auto& vectorTable = InterruptVectorTable::getInstance();    // move vector table into singleton/RAM/ aligned memory block
-    vectorTable.setCallback(IRQIndex, PushButton_Handler);
-    vectorTable.enableISR(IRQIndex);
+    vectorTable.setCallback(IRQType::EXTI0_IRQn, PushButton_Handler);
+    vectorTable.setCallback(IRQType::EXTI3_IRQn, PushButton_Handler);
+    
+    vectorTable.enableISR(IRQType::EXTI0_IRQn);
+    vectorTable.enableISR(IRQType::EXTI3_IRQn);
 
     vectorTable.enableIRQ();
-
-    exti0.retrieveFrom(EINT1);
-    Blinking((unsigned int)exti0.getTrigger());
 
     while(1)
     {

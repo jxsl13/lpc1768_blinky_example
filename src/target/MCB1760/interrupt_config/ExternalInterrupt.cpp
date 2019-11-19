@@ -31,29 +31,6 @@ void ExternalInterrupt::applyTo(ExternalInterrupt::IndexType InterruptIndex) con
 
 }
 
-void ExternalInterrupt::retrieveFrom(ExternalInterrupt::IndexType InterruptIndex)
-{
-    ValueType Index = static_cast<ValueType>(InterruptIndex);
-
-    ValueType Mode = IS_SET(LPC_SC->EXTMODE, Index) ? 1 : 0;
-    ValueType Polar = IS_SET(LPC_SC->EXTPOLAR, Index) ? 1 : 0;
-
-    // level or edge triggered
-    if(Mode)
-        ENABLE(m_Trigger, 1);   // mode is at position 1
-    else
-        DISABLE(m_Trigger, 1);
-    
-    // low/falling or high/rising
-    if (Polar)
-        ENABLE(m_Trigger, 0);   // polar is at position 0
-    else
-        DISABLE(m_Trigger, 0);
-
-    
-
-}
-
 void ExternalInterrupt::clearPendingBitOf(ExternalInterrupt::IndexType InterruptIndex)
 {
     /**

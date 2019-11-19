@@ -47,12 +47,23 @@ void InitGPIO()
     ValueType PA0 = 0;
     ENABLE(RCC->AHB1ENR, PA);           // Enable Clock for Port A
     DISABLE(GPIOA->MODER, 2 * PA0);     // set PA0 to be an input
-    DISABLE(GPIOA->MODER, 2 * PA0 + 1); // PA0 input
-    
+    DISABLE(GPIOA->MODER, 2 * PA0 + 1); // PA0 input   
 
+
+    // PB3 - Input
+    ValueType PB3 = 3;
+    ENABLE(RCC->AHB1ENR, PB);           // Enable Clock for Port A
+    DISABLE(GPIOB->MODER, 2 * PB3);     // set PA0 to be an input
+    DISABLE(GPIOB->MODER, 2 * PB3 + 1); // PA0 input  
+}
+
+
+void InitExtInt0()
+{
     // Trigger EXTI0 with PA0 (EXTI[X] -> P[Y][X])
     ValueType Port = PA;
     ValueType EXTIX = 0;
+    ValueType Trigger = Trigger_Rising_Edge;
 
     /* 
         P[X] will trigger the interrupt
@@ -60,14 +71,7 @@ void InitGPIO()
         this will lead to PA1 to trigger the interupt EXTI1
     */
     SYSCFG->EXTICR[EXTIX / 4] |= (Port << (EXTIX % 4));
-}
 
-
-void InitExtInt0()
-{
-
-    ValueType EXTIX = 0;
-    ValueType Trigger = Trigger_Rising_Edge;
 
     if (!Trigger)
         return;
@@ -107,10 +111,10 @@ void ClearIRQCondition()
 
     if (IRQIndex > 22)
     {
-        //EXTI->PR |= ((1 << IRQIndex) & 0x7FFFFF); // first [22:0]
         return; // mask prevents any other bits from being set.
     }
 
+    //EXTI->PR |= ((1 << IRQIndex) & 0x7FFFFF); // first [22:0]
     ENABLE(EXTI->PR, IRQIndex);    
 }
 

@@ -16,12 +16,6 @@ void ExternalInterrupt::applyTo(ExternalInterrupt::IndexType InterruptIndex) con
 
 }
 
-void ExternalInterrupt::retrieveFrom(ExternalInterrupt::IndexType InterruptIndex)
-{
-    ValueType Index = static_cast<ValueType>(InterruptIndex);
-    m_Trigger = (EICRA >> (Index * 2)) & 0b11;
-}
-
 void ExternalInterrupt::clearPendingBitOf(ExternalInterrupt::IndexType InterruptIndex)
 {
     // clears either bit 0 or 1 by writing a 1 to it.
