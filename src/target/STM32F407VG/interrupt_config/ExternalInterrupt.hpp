@@ -11,6 +11,7 @@
  * The third pair of [] defines a "Line mask", that corresponds to the on pages 289 - 293 defined
  * bit offsets, that configure, what line the specific interrupt/event is connected to.
  * 
+ * If one interrupt is already configured, a second one must not be configured for the same interrupt.
  */
 enum class ExternalInterrupt::IndexType : ValueType {
     // External Interrupts

@@ -4,6 +4,7 @@
 
 InterruptVectorTable::InterruptVectorTable()
 {
+    // TODO: alles in separate init Funktion packen
     ValueType *VectorTable = (ValueType *)SCB->VTOR;
 
     /**
@@ -93,12 +94,16 @@ void InterruptVectorTable::setCallback(IRQType InterruptIndex, void (*Callback)(
 
 void InterruptVectorTable::enableISR(IRQType InterruptIndex)
 {
+    // TODO: disable global interrupts
     NVIC_EnableIRQ(static_cast<IRQn_Type>(InterruptIndex));
+    // TODO: enable global interrupts
 }
 
 void InterruptVectorTable::disableISR(IRQType InterruptIndex)
 {
+    // TODO: disable global interrupts
     NVIC_DisableIRQ(static_cast<IRQn_Type>(InterruptIndex));
+    // TODO: enable global interrupts
 }
 
 bool InterruptVectorTable::isEnabled(IRQType InterruptIndex)
