@@ -122,3 +122,10 @@ void InterruptVectorTable::triggerIRQ(IRQType InterruptIndex)
     NVIC->STIR |= (0x1FF & IRQIndex);
 }
 
+void InterruptVectorTable::waitForIRQ()
+{
+    // wait for interrupt OR event
+    __enable_irq();
+    __WFE();
+}
+

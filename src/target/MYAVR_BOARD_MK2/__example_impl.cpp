@@ -11,17 +11,23 @@ extern "C" {
 
 void delay_ms(unsigned int ms)
 {
-    while (0 < ms)
+    while (ms-- > 0)
     {  
         _delay_ms(1);
-        --ms;
     }
 }
 
+void InitSysTickInterrupts(void)
+{  
+    
+}
+
+
 void InitGPIO()
 {
+
     // make port output & HIGH
-    // our power source
+    // our power source for external interrupt
     ENABLE(DDRB, DDB4);
     ENABLE(PORTB, PORTB4);
 
@@ -44,10 +50,36 @@ void InitExtInt0()
     DISABLE(EICRA, ISC00);
 }
 
+void InitWatchDogTimer()
+{  
+    WDTCSR |= (1<<WDCE) | (1<<WDE); // allows modification of WDT, is cleared after 4 cycles(Page 60/64)
+
+    // prescaler set to 4 seconds
+    // only trigger interrupt, no system reset
+    // add "(1<<WDE) |" in order to also trigger a system reset on wdt timeout.
+    WDTCSR  = (1<<WDE) | (1 <<WDP2) | (1<<WDP1);
+}
+
+void FeedWatchDog()
+{
+    DISABLE(MCUSR, WDRF);
+}
+
+
 void ToggleLED()
 {
     // toggle the LED
     TOGGLE(PORTB, PORTB5);    
+}
+
+void EnableLED()
+{
+    ENABLE(PORTB, PORTB5); 
+}
+
+void DisableLED()
+{
+    DISABLE(PORTB, PORTB5); 
 }
 
 void ClearIRQCondition()
@@ -55,7 +87,7 @@ void ClearIRQCondition()
     ENABLE(EIFR, 0); // clear more or less pending bit.
 }
 
-void PushButton_Handler()
+static void PushButton_Handler()
 {
     ToggleLED();
     ClearIRQCondition();

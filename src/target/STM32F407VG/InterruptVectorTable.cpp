@@ -128,4 +128,12 @@ void InterruptVectorTable::triggerIRQ(IRQType InterruptIndex)
     NVIC->STIR |= (0x1FF & index);
 }
 
+void InterruptVectorTable::waitForIRQ()
+{
+    // wait for interrupt OR event
+    // https://community.arm.com/developer/ip-products/processors/f/cortex-a-forum/5695/difference-between-wfi-and-wfe
+    __enable_irq();
+    __WFE();
+}
+
 

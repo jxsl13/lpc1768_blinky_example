@@ -7,10 +7,10 @@
  * @brief Available external interrupts
  */
 enum class ExternalInterrupt::IndexType : ValueType {
-    EINT0 = 0,
-    EINT1 = 1,
-    EINT2 = 2,
-    EINT3 = 3,
+    EINT0_P2_10 = 0,
+    EINT1_P2_11 = 1,
+    EINT2_P2_12 = 2,
+    EINT3_P2_13 = 3,
 };
 
 

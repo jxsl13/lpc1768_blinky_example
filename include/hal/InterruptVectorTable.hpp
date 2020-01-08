@@ -124,9 +124,18 @@ class InterruptVectorTable
     bool isEnabled(IRQType InterruptIndex);
 
     /**
-         * @brief Triggers a software interrupt request
-         * 
-         * @param InterruptIndex 
-         */
+      * @brief Triggers a software interrupt request
+      * 
+      * @param InterruptIndex 
+      */
     void triggerIRQ(IRQType InterruptIndex);
+
+     /**
+      * @brief Wait until an interrupt is triggered.
+      * Info: If the microcontroller supports events, basically signals that 
+      * do not execute any interrupt service routine, then those microcontrollers
+      * should also stop their waiting, if an event is triggered.
+      * Info: This function enables interrupts before entering a sleep state.
+      */
+    void waitForIRQ();
 };

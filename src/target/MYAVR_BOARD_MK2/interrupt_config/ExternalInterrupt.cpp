@@ -18,7 +18,7 @@ void ExternalInterrupt::applyTo(ExternalInterrupt::IndexType InterruptIndex) con
 
 void ExternalInterrupt::clearPendingBitOf(ExternalInterrupt::IndexType InterruptIndex)
 {
-    // clears either bit 0 or 1 by writing a 1 to it.
+    // clears bit by writing a 1 to it.
     // Page 81 in the manual.
     ENABLE(EIFR, static_cast<ValueType>(InterruptIndex));
 }

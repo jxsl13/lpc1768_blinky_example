@@ -2,6 +2,7 @@
 #include <string.h>
 #include <utils/BitMacros.hpp>
 #include <utils/RegisterBits.hpp>
+#include <avr/sleep.h>
 
 /**
  * @brief Evaluated at compile time, static(accessible only from within this cpp file), 
@@ -265,9 +266,17 @@ void InterruptVectorTable::triggerIRQ(IRQType InterruptIndex)
     volatile ValueType* pRegister = s_InterruptEnableBitMap[index].m_Register;
     ValueType Bit = s_InterruptEnableBitMap[index].m_Bits[0];
 
+    // emulate interrupt call
     if(!IS_SET(SREG, 7) || !IS_SET(*pRegister, Bit))
         return;
 
     // call the function 
     s_VectorTable[index](); 
+}
+
+void InterruptVectorTable::waitForIRQ()
+{
+    set_sleep_mode(SLEEP_MODE_IDLE);
+    sei();
+    sleep_mode();
 }
