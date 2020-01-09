@@ -1,10 +1,13 @@
-template <ValueType Bits>
+#pragma once
+
+
+template <typename ResultType, ResultType Bits>
 struct RegisterBits
 {
     /**
      * @brief Register that is accessed at given bits
      */
-    volatile ValueType* m_Register;
+    volatile ResultType* m_Register;
 
     /**
      * @brief Bit positions that configure the register
@@ -14,14 +17,19 @@ struct RegisterBits
      */
     int8_t m_Bits[Bits];
 
-    ValueType getMaskedValue()
+    /**
+     * @brief Get the Masked Value object
+     * 
+     * @return ResultType 
+     */
+    ResultType getMaskedValue()
     {
         if (!m_Register)
             return 0;
 
-        ValueType tmp = 0;
+        ResultType tmp = 0;
 
-        for (ValueType i = 0; i < Bits; i++)
+        for (ResultType i = 0; i < Bits; i++)
         {
             if (m_Bits[i] < 0)
                 break;

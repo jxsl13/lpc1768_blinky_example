@@ -17,11 +17,6 @@ void delay_ms(unsigned int ms)
     }
 }
 
-void InitSysTickInterrupts(void)
-{  
-    
-}
-
 
 void InitGPIO()
 {
