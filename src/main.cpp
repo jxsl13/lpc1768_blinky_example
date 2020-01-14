@@ -41,6 +41,9 @@ void Blinking(unsigned int times = 5, unsigned int ms = 300)
 
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 int main()
@@ -70,10 +73,9 @@ int main()
     } 
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #ifdef __cplusplus
 }
 #endif
+
+
