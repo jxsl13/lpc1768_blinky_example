@@ -1,7 +1,3 @@
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <controllers/atmega328p/holmes_platform.hpp>     // Target specific interrupt header
 
 
@@ -74,6 +70,9 @@ int main()
     } 
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifdef __cplusplus
 }

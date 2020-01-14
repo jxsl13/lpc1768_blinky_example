@@ -3,12 +3,6 @@
 #include <utils/BitMacros.hpp>  // hal tools
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-
 void delay_ms(unsigned int ms)
 {
     while (ms-- > 0)
@@ -89,6 +83,4 @@ static void PushButton_Handler()
 }
 
 
-#ifdef __cplusplus
-}
-#endif
+

@@ -216,9 +216,6 @@ enum class IRQType : uint8_t
 };
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 template <>
 class InterruptVectorTable<DeviceAtMega328p, uint8_t, IRQType>
@@ -360,9 +357,6 @@ class InterruptVectorTable<DeviceAtMega328p, uint8_t, IRQType>
     }
 };
 
-#ifdef __cplusplus
-}
-#endif
 
 } // namespace internal
 } // namespace holmes
