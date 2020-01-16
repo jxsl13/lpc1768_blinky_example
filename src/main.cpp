@@ -1,5 +1,22 @@
-#include <controllers/atmega328p/holmes_platform.hpp>     // Target specific interrupt header
 
+#if defined ATMEGA328P
+    #include <controllers/atmega328p/holmes_platform.hpp>     // Target specific interrupt header
+
+    using IRQType = holmes::IRQType;
+    constexpr IRQType IRQ_EINT0 = IRQType::INT0_IRQn;
+
+
+#elif defined LPC1768
+    #include <controllers/lpc1768/holmes_platform.hpp>
+    using IRQType = holmes::IRQType;
+    constexpr IRQType IRQ_EINT0 = IRQType::EINT0_IRQn;
+
+#elif defined STM32F407VG
+    #include <controllers/stm32f407vg/holmes_platform.hpp>
+
+    using IRQType = holmes::IRQType;
+    //constexpr IRQType IRQ_EINT0 = IRQType::EXTI0_IRQn;
+#endif
 
 
 
@@ -47,8 +64,7 @@ extern "C" {
 
 int main()
 {   
-    using IRQType = holmes::IRQType;
-    constexpr IRQType IRQ_EINT0 = IRQType::INT0_IRQn;
+    
 
     holmes::init();
 

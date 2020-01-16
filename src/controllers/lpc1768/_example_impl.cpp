@@ -1,18 +1,14 @@
 #include "Interrupt.hpp"
 #include <utils/BitMacros.hpp>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 
 void delay_ms(unsigned int ms)
 {
-    volatile ValueType resetValue = 8 * (SystemFrequency / (SystemFrequency / 1000));
+    volatile unsigned int resetValue = 8 * (SystemFrequency / (SystemFrequency / 1000));
     while (ms-- > 0)
     {
-        volatile ValueType x = resetValue;
+        volatile unsigned int x = resetValue;
 
         while (x-- > 0)
             __asm("nop");
@@ -87,13 +83,4 @@ void ClearIRQCondition()
     ENABLE(LPC_SC->EXTINT, 0); // Clear Interrupt Flag/Pending Bit -> 0 = EINT0
 }
 
-static void PushButton_Handler()
-{
-    ToggleLED();
-    ClearIRQCondition();
-}
-
-#ifdef __cplusplus
-}
-#endif
 
