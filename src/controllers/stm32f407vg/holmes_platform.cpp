@@ -79,7 +79,7 @@ static auto initEXTI() -> void
      * We trigger events and interrupts at the same time!
      */
     ENABLE(EXTI->IMR, EXTIX);  // InterruptMaskRegister -> EXTI_IMR_MR0 = 0
-    //ENABLE(EXTI->EMR, EXTIX);  // EventMaskRegister ->     EXTI_EMR_MR0 = 0
+    ENABLE(EXTI->EMR, EXTIX);  // EventMaskRegister ->     EXTI_EMR_MR0 = 0
 
     if (Trigger == Trigger_Rising_Edge)
     {
