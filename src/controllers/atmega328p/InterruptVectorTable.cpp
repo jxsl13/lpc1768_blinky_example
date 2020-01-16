@@ -1,7 +1,6 @@
 #include "InterruptVectorTable.hpp"
 #include "device.hpp"
 
-
 /**
  * @brief Cannot use static to hide this inside of this .cpp file scope.
  * As static variables cannot be accessed from the hpp global scope

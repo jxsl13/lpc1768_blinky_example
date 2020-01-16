@@ -1,5 +1,7 @@
 #pragma once
 
+#include <avr/interrupt.h>
+#include <avr/sleep.h>
 
 
 namespace holmes

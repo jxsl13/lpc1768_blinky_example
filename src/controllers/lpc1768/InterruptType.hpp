@@ -4,6 +4,7 @@ namespace holmes
 {
 namespace internal
 {
+    
 enum class IRQType : uint32_t
 {
     /******  Cortex-M3 Processor Exceptions Numbers ***************************************************/

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <stdint.h>
+
+
 namespace holmes
 {
 namespace internal

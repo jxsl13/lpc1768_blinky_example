@@ -1,8 +1,14 @@
 #pragma once
 
+#include <stdint.h>
 #include "Interrupt.hpp"
 
-enum class IRQType : ValueType {
+namespace holmes
+{
+namespace internal
+{
+
+enum class IRQType : uint32_t {
     /******  Cortex-M4 Processor Exceptions Numbers ****************************************************************/
     
     // Exceptions are not supported, because they do not explicitly define expected or wanted behaviour, 
@@ -92,3 +98,6 @@ enum class IRQType : ValueType {
     HASH_RNG_IRQn               = 80,      /*!< Hash and Rng global interrupt                                     */
     FPU_IRQn                    = 81      /*!< FPU global interrupt                                              */
 };
+
+}
+}

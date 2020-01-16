@@ -1,8 +1,5 @@
 #pragma once
 
-#include <avr/interrupt.h>
-#include <avr/sleep.h>
-
 #include <utils/BitMacros.hpp>
 #include <utils/RegisterBits.hpp>
 

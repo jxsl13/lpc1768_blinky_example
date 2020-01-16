@@ -4,15 +4,12 @@
 #include "Interrupt.hpp"
 
 
-
-
-
 namespace holmes
 {
-    using DeviceLPC1768 = internal::DeviceLPC1768;
+    using DeviceSTM32F407VG = internal::DeviceSTM32F407VG;
     using IRQType = internal::IRQType;
 
-    using VectorTable = internal::InterruptVectorTable<DeviceLPC1768, uint32_t, IRQType>;
+    using VectorTable = internal::InterruptVectorTable<DeviceSTM32F407VG, uint32_t, IRQType>;
 
 	struct instances
 	{

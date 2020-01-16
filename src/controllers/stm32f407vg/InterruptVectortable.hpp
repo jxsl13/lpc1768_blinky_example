@@ -7,20 +7,17 @@
 #include "InterruptType.hpp"
 #include "device.hpp"
 
-
-
 namespace holmes
 {
 namespace internal
 {
-
 /**
  * @brief Specialization of the InterruptVectorTable for the DeviceAtMega328p
  * 
  * @tparam  
  */
 template <>
-class InterruptVectorTable<DeviceLPC1768, uint32_t, IRQType>
+class InterruptVectorTable<DeviceSTM32F407VG, uint32_t, IRQType>
 {
     /**
      * @brief 
@@ -34,33 +31,33 @@ class InterruptVectorTable<DeviceLPC1768, uint32_t, IRQType>
      */
     InterruptVectorTable()
     {
+        // disable global interrupts
+        disableIRQ();
+
         uint32_t *VectorTable = (uint32_t *)SCB->VTOR;
 
         /**
          * @brief LPC1768 for example needs this alignment of the vector table.
          * Also LPC1768 needs the vector table to be relocated into ram in order to dynamically
          * change the function pointers.
-         * Alignment 256 byte word boundary
+         * 
+         * needs to be aligned at a 256 word bounary in ram
          */
-        alignas(sizeof(uint32_t) * 256) static uint32_t s_VectorTable[DeviceLPC1768::s_NumInterruptVectors];
-        
-        // copy vector table to ram location
-        std::memcpy(s_VectorTable, VectorTable, sizeof(uint32_t) * DeviceLPC1768::s_NumInterruptVectors); 
+        alignas(sizeof(uint32_t) * 256) static uint32_t s_VectorTable[DeviceSTM32F407VG::s_NumInterruptVectors];
 
-        /* relocate vector table into RAM*/ 
-        // disable global interrupts
-        disableIRQ();
+        /* relocate vector table into RAM*/
+        std::memcpy(s_VectorTable, VectorTable, sizeof(uint32_t) * DeviceSTM32F407VG::s_NumInterruptVectors);
 
         /* 
             VTOR bit assignment
             ===================
             [31:30] - Reserved
-            [29:8] - TBLOFF
-                    Vector table base offset field. It contains bits[29:8] of the offset of the table base from the bottom of the memory map.
+            [29:9] - TBLOFF
+                    Vector table base offset field. It contains bits[29:9] of the offset of the table base from the bottom of the memory map.
                     
                     Remark: Bit[29] determines whether the vector table is in the code or SRAM memory region:
                     Bit[29] is sometimes called the TBLBASE bit. 
-                    • 0=code
+                    • 0=Code
                     • 1=SRAM. 
             [7:0] - Reserved
             
@@ -69,11 +66,11 @@ class InterruptVectorTable<DeviceLPC1768, uint32_t, IRQType>
         /**
          * @brief Mask only the TBLOFF part, don't touch the rest.
          */
-        SCB->VTOR = (uint32_t)s_VectorTable & 0x3FFFFF00;
-        
+        SCB->VTOR = ((uint32_t)s_VectorTable & 0x3FFFFE00);
+
         // point to the static vector, as that vector stays the same forever.
         m_VectorTable = s_VectorTable;
-        
+
         // wait for memory operations to finish
         __DSB();
 
@@ -89,12 +86,11 @@ class InterruptVectorTable<DeviceLPC1768, uint32_t, IRQType>
      * The behaviour is undefined if the vector is accessed with offsets that are not within the
      * range [0:DeviceAtMega328p::s_NumInterruptVectors[
      */
-    uint32_t* m_VectorTable;
+    uint32_t *m_VectorTable;
 
    public:
-    
-    static auto getInstance() -> InterruptVectorTable&
-    {   
+    static auto getInstance() -> InterruptVectorTable &
+    {
         // Info: It is not possible to properly define desructors for rather complex
         // types, in this case a static variable, thus destructors have been omitted.
         static InterruptVectorTable instance; // Guaranteed to be destroyed.
@@ -104,14 +100,12 @@ class InterruptVectorTable<DeviceLPC1768, uint32_t, IRQType>
 
     auto setCallback(IRQType InterruptIndex, void (*Callback)(void)) -> void
     {
-        uint32_t index = static_cast<uint32_t>(InterruptIndex);
-    
-        m_VectorTable[index + NVIC_USER_IRQ_OFFSET] = reinterpret_cast<uint32_t>(Callback);
-        
         /**
-         * Same as:
-         * NVIC_SetVector((IRQn)(index), (ValueType)Callback);
+         * It is not possible to unwrap a std::function in order to extract the function pointer! 
+         * Thus one can only use the raw C function pointer
          */
+        uint32_t index = static_cast<uint32_t>(InterruptIndex);
+        m_VectorTable[index + NVIC_USER_IRQ_OFFSET] = reinterpret_cast<uint32_t>(Callback);
     }
 
     auto enableIRQ() -> void
@@ -122,7 +116,7 @@ class InterruptVectorTable<DeviceLPC1768, uint32_t, IRQType>
 
     auto disableIRQ() -> void
     {
-        // disable global interrupts.
+        // disable global interrupts
         __disable_irq();
     }
 
@@ -136,7 +130,7 @@ class InterruptVectorTable<DeviceLPC1768, uint32_t, IRQType>
          * 
          * 1 -> global interrupts are enabled
          * 0 -> global interrupts are disabled
-         * */
+         */
         return __get_PRIMASK() == 0;
     }
 
@@ -157,23 +151,23 @@ class InterruptVectorTable<DeviceLPC1768, uint32_t, IRQType>
 
     auto triggerIRQ(IRQType InterruptIndex) -> void
     {
-        uint32_t IRQIndex = static_cast<uint32_t>(InterruptIndex);
         /**
          * Bits 8:0 - 256 Interrupt values (binary 0b111111111 -> 0x1FF)
          * Values of bits 31:9 are reserved, so should not be read or touched
-         * (Manual UM10360 - Page 92)
+         * Manual UM10360 - Page 92
          */
-        NVIC->STIR |= (0x1FF & IRQIndex);
+        uint32_t index = static_cast<uint32_t>(InterruptIndex);
+        NVIC->STIR |= (0x1FF & index);
     }
 
     auto waitForIRQ() -> void
     {
-        // wait for interrupt OR event(interrupt that does not execute an ISR)
+        // wait for interrupt OR event
+        // https://community.arm.com/developer/ip-products/processors/f/cortex-a-forum/5695/difference-between-wfi-and-wfe
         __enable_irq();
-        __WFE();        // alternatively __WFI(); can be used, in order to not handle events.
+        __WFE();
     }
 };
-
 
 } // namespace internal
 } // namespace holmes

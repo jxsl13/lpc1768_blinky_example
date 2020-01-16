@@ -1,5 +1,5 @@
 #pragma once
-
+#include <stdint.h>
 
 template <typename ResultType, ResultType Bits>
 struct RegisterBits

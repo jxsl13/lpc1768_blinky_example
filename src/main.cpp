@@ -15,7 +15,7 @@
     #include <controllers/stm32f407vg/holmes_platform.hpp>
 
     using IRQType = holmes::IRQType;
-    //constexpr IRQType IRQ_EINT0 = IRQType::EXTI0_IRQn;
+    constexpr IRQType IRQ_EINT0 = IRQType::EXTI0_IRQn;
 #endif
 
 
@@ -30,20 +30,10 @@ extern void ToggleLED();
 extern void EnableLED();
 extern void DisableLED();
 
-extern void InitGPIO();
-extern void InitWatchDogTimer();
-
-// clears pushbutton pending flag
+// clears external interrupt pending flag
 extern void ClearIRQCondition();
 
-void PushButton_Handler()
-{
-    ClearIRQCondition();
-}
-
-
-
-void Blinking(unsigned int times = 5, unsigned int ms = 300)
+void Blinking(unsigned int times = 1, unsigned int ms = 300)
 {
     for (unsigned int i = 0; i < times * 2; i++)
     {
@@ -52,9 +42,10 @@ void Blinking(unsigned int times = 5, unsigned int ms = 300)
     } 
 }
 
-
-
-
+void PushButton_Handler()
+{
+    ClearIRQCondition();
+}
 
 
 #ifdef __cplusplus
@@ -84,7 +75,7 @@ int main()
     while(1)
     {
         vectorTable.waitForIRQ();
-        Blinking(1, 500);             
+        Blinking(1, 500);    // toggle twice with 500ms inbetween                
     } 
 }
 
