@@ -4,10 +4,10 @@
 
 /**
  * @brief Cannot use static to hide this inside of this .cpp file scope.
- * As static variables cannot be accessed from the hpp globa scope
+ * As static variables cannot be accessed from the hpp global scope
  * 
  */
-void (*s_VectorTable[holmes::internal::DeviceAtMega328p::s_NumInterruptVectors])(void);
+void (*g_VectorTable[holmes::internal::DeviceAtMega328p::s_NumInterruptVectors])(void);
 
 #define INT0_vect _VECTOR(1)          /* External Interrupt Request 0 */
 #define INT1_vect _VECTOR(2)          /* External Interrupt Request 1 */
@@ -38,101 +38,101 @@ void (*s_VectorTable[holmes::internal::DeviceAtMega328p::s_NumInterruptVectors])
 
 ISR(INT0_vect)
 {
-    s_VectorTable[1]();
+    g_VectorTable[1]();
 }
 ISR(INT1_vect)
 {
-    s_VectorTable[2]();
+    g_VectorTable[2]();
 }
 ISR(PCINT0_vect)
 {
-    s_VectorTable[3]();
+    g_VectorTable[3]();
 }
 ISR(PCINT1_vect)
 {
-    s_VectorTable[4]();
+    g_VectorTable[4]();
 }
 ISR(PCINT2_vect)
 {
-    s_VectorTable[5]();
+    g_VectorTable[5]();
 }
 ISR(WDT_vect)
 {
-    s_VectorTable[6]();
+    g_VectorTable[6]();
 }
 ISR(TIMER2_COMPA_vect)
 {
-    s_VectorTable[7]();
+    g_VectorTable[7]();
 }
 ISR(TIMER2_COMPB_vect)
 {
-    s_VectorTable[8]();
+    g_VectorTable[8]();
 }
 ISR(TIMER2_OVF_vect)
 {
-    s_VectorTable[9]();
+    g_VectorTable[9]();
 }
 ISR(TIMER1_CAPT_vect)
 {
-    s_VectorTable[10]();
+    g_VectorTable[10]();
 }
 ISR(TIMER1_COMPA_vect)
 {
-    s_VectorTable[11]();
+    g_VectorTable[11]();
 }
 ISR(TIMER1_COMPB_vect)
 {
-    s_VectorTable[12]();
+    g_VectorTable[12]();
 }
 ISR(TIMER1_OVF_vect)
 {
-    s_VectorTable[13]();
+    g_VectorTable[13]();
 }
 ISR(TIMER0_COMPA_vect)
 {
-    s_VectorTable[14]();
+    g_VectorTable[14]();
 }
 ISR(TIMER0_COMPB_vect)
 {
-    s_VectorTable[15]();
+    g_VectorTable[15]();
 }
 ISR(TIMER0_OVF_vect)
 {
-    s_VectorTable[16]();
+    g_VectorTable[16]();
 }
 ISR(SPI_STC_vect)
 {
-    s_VectorTable[17]();
+    g_VectorTable[17]();
 }
 ISR(USART_RXC_vect)
 {
-    s_VectorTable[18]();
+    g_VectorTable[18]();
 }
 ISR(USART_UDRE_vect)
 {
-    s_VectorTable[19]();
+    g_VectorTable[19]();
 }
 ISR(USART_TXC_vect)
 {
-    s_VectorTable[20]();
+    g_VectorTable[20]();
 }
 ISR(ADC_vect)
 {
-    s_VectorTable[21]();
+    g_VectorTable[21]();
 }
 ISR(EE_READY_vect)
 {
-    s_VectorTable[22]();
+    g_VectorTable[22]();
 }
 ISR(ANALOG_COMP_vect)
 {
-    s_VectorTable[23]();
+    g_VectorTable[23]();
 }
 ISR(TWI_vect)
 {
-    s_VectorTable[24]();
+    g_VectorTable[24]();
 }
 ISR(SPM_READY_vect)
 {
-    s_VectorTable[25]();
+    g_VectorTable[25]();
 }

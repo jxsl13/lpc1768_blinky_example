@@ -17,7 +17,7 @@
  * This Table needs to be global in order for it to be accessible from
  * within the ISRs.
  */
-extern void (*s_VectorTable[holmes::internal::DeviceAtMega328p::s_NumInterruptVectors])(void);
+extern void (*g_VectorTable[holmes::internal::DeviceAtMega328p::s_NumInterruptVectors])(void);
 
 
 
@@ -32,7 +32,7 @@ namespace internal
 
 
 /**
- * @brief Evaluated at compile time, static(accessible only from within this cpp file), 
+ * @brief Evaluated at compile time, static(accessible only from within this source file), 
  * immutable
  */
 constexpr const static RegisterBits<uint8_t, 1> s_InterruptEnableBitMap[DeviceAtMega328p::s_NumInterruptVectors] = {
@@ -126,35 +126,37 @@ class InterruptVectorTable<DeviceAtMega328p, uint8_t, IRQType>
         disableIRQ();
 
         /**
-     * When there is no handler, we use this anonymous DafaultHandler
-     */
+         * When there is no handler, we use this anonymous DafaultHandler
+         */
         auto DefaultHandler = []() -> void {};
 
         // RESET cannot be set via the interrupt vector table
-        s_VectorTable[0] = 0x0;
+        g_VectorTable[0] = 0x0;
 
         // set default handler for all the other ISRs
         for (uint8_t i = 1; i < DeviceAtMega328p::s_NumInterruptVectors; i++)
         {
-            s_VectorTable[i] = DefaultHandler;
+            g_VectorTable[i] = DefaultHandler;
         }
 
         // set member variable to point at the static array.
-        m_VectorTable = reinterpret_cast<uint8_t*>(s_VectorTable);
+        m_VectorTable = reinterpret_cast<uint8_t*>(g_VectorTable);
     }
 
     /**
      * @brief This vector pointer needs to point to the Vector Table.
-     * The vector Table needs to have the explicit size of VectorsCount of the uint8_t.
-     * The behaviour is undefined if the vector is accessed from with offsets that are not within the
-     * range [0:VectorsCount]
+     * The vector Table needs to have the explicit size of DeviceAtMega328p::s_NumInterruptVectors of the uint8_t.
+     * The behaviour is undefined if the vector is accessed with offsets that are not within the
+     * range [0:DeviceAtMega328p::s_NumInterruptVectors[
      */
     uint8_t* m_VectorTable;
 
    public:
     
     static auto getInstance() -> InterruptVectorTable&
-    {
+    {   
+        // Info: It is not possible to properly define desructors for rather complex
+        // types, in this case a static variable, thus destructors have been omitted.
         static InterruptVectorTable instance; // Guaranteed to be destroyed.
                                               // Instantiated on first use.
         return instance;
@@ -164,9 +166,10 @@ class InterruptVectorTable<DeviceAtMega328p, uint8_t, IRQType>
     {
         /**
          * All needed checks are done at compile time, especially whether 
-         * InterruptIndex is actually a valid Interrupt index
+         * InterruptIndex is actually a valid Interrupt index,
+         * as enum class variables are enfoced to be typesafe contrary to simple enums
          */
-        s_VectorTable[static_cast<uint8_t>(InterruptIndex)] = Callback;
+        g_VectorTable[static_cast<uint8_t>(InterruptIndex)] = Callback;
     }
 
     auto enableIRQ() -> void
@@ -183,6 +186,7 @@ class InterruptVectorTable<DeviceAtMega328p, uint8_t, IRQType>
 
     auto isEnabled() -> bool
     {
+        // check if interrupts are globally enabled (Manual Page 20)
         return IS_SET(SREG, 7);
     }
 
@@ -190,9 +194,11 @@ class InterruptVectorTable<DeviceAtMega328p, uint8_t, IRQType>
     {
         uint8_t index = static_cast<uint8_t>(InterruptIndex);
 
+        // get register address & bit that needs to be set from the map structure
         volatile uint8_t* pRegister = s_InterruptEnableBitMap[index].m_Register;
         uint8_t Bit = s_InterruptEnableBitMap[index].m_Bits[0];
 
+        // enable set bit to 1 within that register 
         ENABLE(*pRegister, Bit);
     }
 
@@ -228,17 +234,16 @@ class InterruptVectorTable<DeviceAtMega328p, uint8_t, IRQType>
             return;
 
         // emulate interrupt call by calling the function
-        s_VectorTable[index]();
+        g_VectorTable[index]();
     }
 
     auto waitForIRQ() -> void
     {
-        // todo: test these two commands
-        //__enable_interrupt(); /* set Global Interrupt Enable */
-        //__sleep(); /
-        set_sleep_mode(SLEEP_MODE_IDLE);
-        sei();
-        sleep_mode();
+        // SLEEP_MODE_IDLE needs 6 ticks to wake up, but does react to ALL possible interrupts.
+        // other sleep modes need longer to wake up and do not react to all interrupts. (Manual Page 48)
+        set_sleep_mode(SLEEP_MODE_IDLE);    // set sleep mode
+        sei();                              // enable interrupts
+        sleep_mode();                       // sleep until interrupt
     }
 };
 

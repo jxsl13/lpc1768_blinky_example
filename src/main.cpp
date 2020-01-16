@@ -21,7 +21,6 @@ extern void ClearIRQCondition();
 
 void PushButton_Handler()
 {
-    ToggleLED();
     ClearIRQCondition();
 }
 
@@ -60,7 +59,7 @@ int main()
 
     vectorTable.setCallback(IRQ_EINT0, PushButton_Handler); // enable external interrupt service routines
     vectorTable.enableISR(IRQ_EINT0);
-
+    
 
     // enable global interrupts
     vectorTable.enableIRQ(); 
@@ -69,7 +68,7 @@ int main()
     while(1)
     {
         vectorTable.waitForIRQ();
-        Blinking(4, 500);               
+        Blinking(1, 500);             
     } 
 }
 
