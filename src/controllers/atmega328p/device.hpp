@@ -15,10 +15,15 @@ namespace holmes
 
       public:
         /**
+         * @brief Inherent property of the device, which discribes the value size & type.
+         */
+        using ValueType = uint8_t;
+        
+        /**
          * @brief Each dummy class is **required** to have this public static member in order to specialize
          * the InterruptVectorTable.
          */
-        static const int s_NumInterruptVectors = {26};
+        static const ValueType s_NumInterruptVectors = {26};
     };
   }
 }
