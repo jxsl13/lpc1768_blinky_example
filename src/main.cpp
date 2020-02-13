@@ -1,87 +1,58 @@
+#include <util/delay.h>
+#include <avr/interrupt.h>
+#include <utils/BitMacros.hpp>
 
-#if defined ATMEGA328P
-    #include <controllers/atmega328p/holmes_platform.hpp>     // Target specific interrupt header
-
-    using IRQType = holmes::IRQType;
-    constexpr IRQType IRQ_EINT0 = IRQType::INT0_IRQn;
-
-
-#elif defined LPC1768
-    #include <controllers/lpc1768/holmes_platform.hpp>
-    using IRQType = holmes::IRQType;
-    constexpr IRQType IRQ_EINT0 = IRQType::EINT0_IRQn;
-
-#elif defined STM32F407VG
-    #include <controllers/stm32f407vg/holmes_platform.hpp>
-
-    using IRQType = holmes::IRQType;
-    constexpr IRQType IRQ_EINT0 = IRQType::EXTI0_IRQn;
-#endif
-
-
-
-/**
- * @brief These are being implemented in _example_impl.cpp
- *      for each target specifically.
- * @param int 
- */
-extern void delay_ms(unsigned int);
-extern void ToggleLED();
-extern void EnableLED();
-extern void DisableLED();
-
-// clears external interrupt pending flag
-extern void ClearIRQCondition();
-
-void Blinking(unsigned int times = 1, unsigned int ms = 300)
+void InitGPIO()
 {
-    for (unsigned int i = 0; i < times * 2; i++)
+    // Power source
+    ENABLE(DDRB, DDB4);     // set PB4 as output (Manual Page 86)
+    ENABLE(PORTB, PORTB4);  // set PB4 as HIGH
+
+    // LED
+    ENABLE(DDRB, DDB5);     // set PB5 as output
+    DISABLE(PORTB, PORTB5); // set PB5 as LOW
+
+    // Make Port D2 Input External Interrupt
+    DISABLE(DDRD, DDD2);    // set PD2 as input
+    ENABLE(PORTD, PORTD2);  // trie-state
+}
+
+void InitExtInt0()
+{
+    ENABLE(EICRA, ISC01);   // INT0 is triggered by a ...
+    DISABLE(EICRA, ISC00);  // ... falling edge (Manual Page 80)
+
+    ENABLE(EIMSK, INT0);    // enable INT0 (Manual Page 81)
+    sei();                  // enable global Interrupts
+}
+
+void ToggleLED()
+{
+    TOGGLE(PORTB, PORTB5);    // toggle between HIGH & LOW
+}
+
+void delay_ms(unsigned int ms)
+{
+    while (ms-- > 0)
+    {  
+        _delay_ms(1);           // limited delay
+    }
+}
+
+ISR(INT0_vect)
+{
+    for (int i = 0; i < 2; i++) 
     {
-        delay_ms(ms);
         ToggleLED();
-    } 
+        delay_ms(300);
+    }
+    ENABLE(EIFR, 0);    // clear pending flag (Manual Page 81)
 }
-
-void PushButton_Handler()
-{
-    ClearIRQCondition();
-}
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 int main()
-{   
-    
-
-    holmes::init();
-
-    DisableLED();
-
-
-    auto& vectorTable = holmes::instances::vectorTable();
-
-    vectorTable.setCallback(IRQ_EINT0, PushButton_Handler); // enable external interrupt service routines
-    vectorTable.enableISR(IRQ_EINT0);
-    
-
-    // enable global interrupts
-    vectorTable.enableIRQ(); 
-
-
-    while(1)
-    {
-        vectorTable.waitForIRQ();
-        Blinking(1, 500);    // toggle twice with 500ms inbetween                
-    } 
+{
+    InitGPIO();
+    InitExtInt0();
+    while(true){/* do nothing */};
 }
-
-
-#ifdef __cplusplus
-}
-#endif
-
 
