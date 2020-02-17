@@ -65,7 +65,6 @@ int main()
 void InitGPIO()
 {
     SystemInit();                       // startup board in a predefined state
-    ENABLE(LPC_SC->PCONP, 15);          // enable power (Manual Page 65)
 
     // LED - P1.28 - Pin Function
     DISABLE(LPC_PINCON->PINSEL3, 24);   // P1.28 - AS GPIO Pin
@@ -80,7 +79,6 @@ void InitGPIO()
     ENABLE(LPC_PINCON->PINSEL4, 20);    // ...(Manual Page 120)
 
     DISABLE(LPC_GPIO2->FIODIR, 10);     // P2.10 - As input (Manual Page 133)
-    ENABLE(LPC_GPIOINT->IO2IntEnF, 10); // P2.10 - Enable for Falling Edge (Manual Page 133)
 }
 
 void InitExtInt0()
@@ -89,7 +87,7 @@ void InitExtInt0()
 
     ENABLE(LPC_SC->EXTINT, 0);      // EINT0 - Clear pending bit (Manual Pages 26,27)
     ENABLE(LPC_SC->EXTMODE, 0);     // EINT0 - Edge sensitive (Manual Page 26, 28)
-    ENABLE(LPC_SC->EXTPOLAR, 0);    // EINT0 - Falling edge (Manual Page 26,28)
+    DISABLE(LPC_SC->EXTPOLAR, 0);    // EINT0 - Falling edge (Manual Page 26,28)
 
     NVIC_EnableIRQ(EINT0_IRQn);     // LPC17xx.h - Enable external Interrupt (EINT0)
     __enable_irq();                 // cmsis_gcc.h - Enable interrupts globally
