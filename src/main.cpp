@@ -95,10 +95,6 @@ void InitExtInt0()
     __enable_irq();                 // cmsis_gcc.h - Enable interrupts globally
 }
 
-void ToggleLED()
-{
-    TOGGLE(LPC_GPIO1->FIOPIN, 28);  // P2.10 - Toggle state (Manual Page 133)
-}
 
 void delay_ms(unsigned int ms)
 {
@@ -109,12 +105,18 @@ void delay_ms(unsigned int ms)
         volatile unsigned int x = resetValue;
 
         while (x-- > 0)
+        {
             __asm("nop");
+        }      
     }
-
 }
 
-void EINT0_IRQHandler() // Definitions in startup_LPC17xx.S
+void ToggleLED()
+{
+    TOGGLE(LPC_GPIO1->FIOPIN, 28);  // P2.10 - Toggle state (Manual Page 133)
+}
+
+extern "C" void EINT0_IRQHandler() // Definitions in startup_LPC17xx.S
 {
     ToggleLED();
     ENABLE(LPC_SC->EXTINT, 0); // clear pending flag
@@ -124,10 +126,8 @@ int main()
 {
     InitGPIO();
     InitExtInt0();
-    while(true){
-        delay_ms(1000);
-        ToggleLED();
-    };
+
+    while(true){};
 }
 
 
