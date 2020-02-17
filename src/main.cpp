@@ -95,19 +95,15 @@ void InitExtInt0()
     __enable_irq();                 // cmsis_gcc.h - Enable interrupts globally
 }
 
-
 void delay_ms(unsigned int ms)
 {
     // Not necessarily accurate, but enought of a delay for testing purposes
-    volatile unsigned int resetValue = 8 * (SystemFrequency / (SystemFrequency / 1000)); // system_LPC17xx.h
+    unsigned int resetValue = 8 * (SystemFrequency / (SystemFrequency / 1000)); // system_LPC17xx.h
     while (ms-- > 0)
     {
-        volatile unsigned int x = resetValue;
-
+        unsigned int x = resetValue;
         while (x-- > 0)
-        {
             __asm("nop");
-        }      
     }
 }
 
@@ -116,20 +112,18 @@ void ToggleLED()
     TOGGLE(LPC_GPIO1->FIOPIN, 28);  // P2.10 - Toggle state (Manual Page 133)
 }
 
-extern "C" void EINT0_IRQHandler() // Definitions in startup_LPC17xx.S
+extern "C" void EINT0_IRQHandler()  // Definitions in startup_LPC17xx.S
 {
     ToggleLED();
-    ENABLE(LPC_SC->EXTINT, 0); // clear pending flag
+    ENABLE(LPC_SC->EXTINT, 0);      // clear pending flag
 }
 
 int main()
 {
-    InitGPIO();
-    InitExtInt0();
-
+    InitGPIO();     // configure GPIO
+    InitExtInt0();  // configure external interrupt
     while(true){};
 }
-
 
 #elif defined STM32F407VG
 #include "controllers/stm32f407vg/stm32f4xx.h"
