@@ -123,5 +123,104 @@ int main()
 }
 #elif defined STM32F407VG
 #include "controllers/stm32f407vg/stm32f4xx.h"
+#include <utils/BitMacros.hpp>
+
+enum Ports : uint32_t {
+    PA = 0,
+    PD = 3,
+};
+
+enum Pins : uint32_t {
+    PA0     = 0,
+    PD12    = 12,
+};
+
+enum Triggers : uint32_t {
+    Edge_None       = 0b00,
+    Edge_Rising     = 0b01,
+    Edge_Falling    = 0b10,
+    Edge_Both       = 0b11,
+};
+
+void InitGPIO()
+{
+    SystemInit();       // initialize microcontroller in a predefined state
+
+    // LED4 is connected to PD12
+    ENABLE(RCC->AHB1ENR, PD);             // enable clock for Port D
+    DISABLE(GPIOD->MODER, (2 * PD12) + 1);// 0b01 - General Purpose ouput
+    ENABLE(GPIOD->MODER, 2 * PD12);       // 0b01 - General Purpose ouput
+    
+    // Cofigure PA0 as GPIO input
+    ENABLE(RCC->AHB1ENR, PA);            // enable Clock for Port A
+    DISABLE(GPIOA->MODER, (2 * PA0) + 1);// 0b00 - General Purpose input 
+    DISABLE(GPIOA->MODER, 2 * PA0);      // 0b00 - General Purpose input
+}
+
+void InitExtInt0()
+{
+    __disable_irq();   // Disable global interrupts
+
+    // Trigger EXTI0 with PA0 (EXTI[X] -> P[Y][X])
+    constexpr uint32_t Port = PA;       // PA
+    constexpr uint32_t EXTIX = 0;       // EXTI0
+    constexpr uint32_t Trigger = Edge_Rising;
+
+    if (EXTIX > 22) return;
+
+    /* 
+        P[X] will trigger the interrupt
+        let Port be A and EXTIX be 1,
+        this will lead to PA1 to trigger the interupt EXTI1
+    */
+    SYSCFG->EXTICR[EXTIX / 4] |= (Port << (EXTIX % 4)); // configure EXTI0 to be triggered by PA0
+    
+    // Trigger event and interrupt
+    ENABLE(EXTI->IMR, EXTIX);  // InterruptMaskRegister - EXTI0 triggers interrupt
+    ENABLE(EXTI->EMR, EXTIX);  // EventMaskRegister - EXTI0 triggers event
+
+    // 
+    if (IS_SET(Trigger, 0))
+        ENABLE(EXTI->RTSR, EXTIX);
+    else
+        DISABLE(EXTI->RTSR, EXTIX);
+
+    if (IS_SET(Trigger, 1))
+        ENABLE(EXTI->FTSR, EXTIX);
+    else
+        DISABLE(EXTI->FTSR, EXTIX);
+    
+    NVIC_EnableIRQ(EXTI0_IRQn);     // enable ISR
+    __enable_irq();                 // enable global interrupts
+}
+
+void delay_ms(unsigned int ms)
+{
+    int resetValue = 6 * SystemCoreClock / (SystemCoreClock / 1000);
+    while (ms-- > 0)
+    {
+        int x = resetValue;
+        while (x-- > 0)
+            __asm("nop");
+    }
+}
+
+void ToggleLED()
+{
+    TOGGLE(GPIOD->ODR, PD12);
+}
+
+extern "C" void EXTI0_IRQHandler()
+{
+    ToggleLED();
+    ENABLE(EXTI->PR, EXTI0_IRQn);   // clear pending bit
+}
+
+int main()
+{
+    InitGPIO();     // configure GPIO
+    InitExtInt0();  // configure external interrupt
+    while(true){};
+}
 
 #endif
