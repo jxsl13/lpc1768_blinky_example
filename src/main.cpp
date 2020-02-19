@@ -144,16 +144,16 @@ enum Triggers : uint32_t {
 
 void InitGPIO()
 {
-    SystemInit();       // initialize microcontroller in a predefined state
+    SystemInit(); // initialize microcontroller in a predefined state
 
     // LED4 is connected to PD12
-    ENABLE(RCC->AHB1ENR, PD);             // enable clock for Port D
-    DISABLE(GPIOD->MODER, (2 * PD12) + 1);// 0b01 - General Purpose ouput
+    ENABLE(RCC->AHB1ENR, PD);             // enable clock for Port D (Manual Page 180)
+    DISABLE(GPIOD->MODER, (2 * PD12) + 1);// 0b01 - General Purpose ouput (Manual Page 281)
     ENABLE(GPIOD->MODER, 2 * PD12);       // 0b01 - General Purpose ouput
     
     // Cofigure PA0 as GPIO input
-    ENABLE(RCC->AHB1ENR, PA);            // enable Clock for Port A
-    DISABLE(GPIOA->MODER, (2 * PA0) + 1);// 0b00 - General Purpose input 
+    ENABLE(RCC->AHB1ENR, PA);            // enable Clock for Port A (Manual Page 180)
+    DISABLE(GPIOA->MODER, (2 * PA0) + 1);// 0b00 - General Purpose input (Manual Page 281)
     DISABLE(GPIOA->MODER, 2 * PA0);      // 0b00 - General Purpose input
 }
 
@@ -161,41 +161,38 @@ void InitExtInt0()
 {
     __disable_irq();   // Disable global interrupts
 
-    // Trigger EXTI0 with PA0 (EXTI[X] -> P[Y][X])
     constexpr uint32_t Port = PA;       // PA
     constexpr uint32_t EXTIX = 0;       // EXTI0
     constexpr uint32_t Trigger = Edge_Rising;
 
-    if (EXTIX > 22) return;
-
-    /* 
-        P[X] will trigger the interrupt
-        let Port be A and EXTIX be 1,
-        this will lead to PA1 to trigger the interupt EXTI1
-    */
+    if (EXTIX > 22) return; // only 22 available external interrupt sources.
+    
+    // Manual Page 291
     SYSCFG->EXTICR[EXTIX / 4] |= (Port << (EXTIX % 4)); // configure EXTI0 to be triggered by PA0
     
     // Trigger event and interrupt
-    ENABLE(EXTI->IMR, EXTIX);  // InterruptMaskRegister - EXTI0 triggers interrupt
-    ENABLE(EXTI->EMR, EXTIX);  // EventMaskRegister - EXTI0 triggers event
+    ENABLE(EXTI->IMR, EXTIX);  // EXTI0 triggers interrupt (Manual Page 381)
+    ENABLE(EXTI->EMR, EXTIX);  // EXTI0 triggers event (Manual Page 384)
 
-    // 
-    if (IS_SET(Trigger, 0))
-        ENABLE(EXTI->RTSR, EXTIX);
-    else
-        DISABLE(EXTI->RTSR, EXTIX);
 
-    if (IS_SET(Trigger, 1))
-        ENABLE(EXTI->FTSR, EXTIX);
+    if (IS_SET(Trigger, 0)) // Rising trigger selection register (Manual Page 385)
+        ENABLE(EXTI->RTSR, EXTIX);  // enable rising edge
     else
-        DISABLE(EXTI->FTSR, EXTIX);
+        DISABLE(EXTI->RTSR, EXTIX); // disable rising edge
+
     
-    NVIC_EnableIRQ(EXTI0_IRQn);     // enable ISR
-    __enable_irq();                 // enable global interrupts
+    if (IS_SET(Trigger, 1)) // Falling trigger selection register (Manual Page 385)
+        ENABLE(EXTI->FTSR, EXTIX);  // enable falling edge
+    else
+        DISABLE(EXTI->FTSR, EXTIX); // disable falling edge
+    
+    NVIC_EnableIRQ(EXTI0_IRQn);     // enable ISR   - core_cm4.h
+    __enable_irq();                 // enable global interrupts - cmsis_gcc.h
 }
 
 void delay_ms(unsigned int ms)
 {
+    // SystemCoreClock is defined in system_stm32f4xx.c
     int resetValue = 6 * SystemCoreClock / (SystemCoreClock / 1000);
     while (ms-- > 0)
     {
@@ -207,13 +204,13 @@ void delay_ms(unsigned int ms)
 
 void ToggleLED()
 {
-    TOGGLE(GPIOD->ODR, PD12);
+    TOGGLE(GPIOD->ODR, PD12); // Manual Pages 267, 
 }
 
-extern "C" void EXTI0_IRQHandler()
+extern "C" void EXTI0_IRQHandler()  // startup_stm32f4xx.S
 {
     ToggleLED();
-    ENABLE(EXTI->PR, EXTI0_IRQn);   // clear pending bit
+    ENABLE(EXTI->PR, EXTI0_IRQn);   // clear pending bit (Manual Page 386)
 }
 
 int main()
