@@ -165,7 +165,7 @@ void InitExtInt0()
     constexpr uint32_t EXTIX = 0;       // EXTI0
     constexpr uint32_t Trigger = Edge_Rising;
 
-    if (EXTIX > 22) return; // only 22 available external interrupt sources.
+    if (EXTIX > 15) return; // only 16 available external interrupt sources.
     
     // Manual Page 291
     SYSCFG->EXTICR[EXTIX / 4] |= (Port << (EXTIX % 4)); // configure EXTI0 to be triggered by PA0
