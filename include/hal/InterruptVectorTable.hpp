@@ -29,14 +29,6 @@ class InterruptVectorTable
      */
     InterruptVectorTable();
 
-    /**
-     * @brief This vector pointer needs to point to the Vector Table.
-     * The vector Table needs to have the explicit size of VectorsCount of the ResultType.
-     * The behaviour is undefined if the vector is accessed from with offsets that are not within the
-     * range [0:VectorsCount]
-     */
-    ResultType* m_VectorTable;
-
    public:
 
     /**
@@ -55,12 +47,7 @@ class InterruptVectorTable
      * 
      * @return InterruptVectorTable& 
      */
-    static inline auto getInstance() -> InterruptVectorTable&
-    {
-        static InterruptVectorTable instance; // Guaranteed to be destroyed.
-                                              // Instantiated on first use.
-        return instance;
-    }
+    static auto getInstance() -> InterruptVectorTable&;
 
     /**
      * @brief set specific interrupt service routine for the corresponding interrupt index.
