@@ -1,12 +1,12 @@
 #include "InterruptVectorTable.hpp"
-#include "device.hpp"
+#include <avr/interrupt.h>
 
 /**
  * @brief Cannot use static to hide this inside of this .cpp file scope.
  * As static variables cannot be accessed from the hpp global scope
  * 
  */
-void (*g_VectorTable[holmes::internal::DeviceAtMega328p::s_NumInterruptVectors])(void);
+void (*g_VectorTable[26])(void);
 
 #define INT0_vect _VECTOR(1)          /* External Interrupt Request 0 */
 #define INT1_vect _VECTOR(2)          /* External Interrupt Request 1 */

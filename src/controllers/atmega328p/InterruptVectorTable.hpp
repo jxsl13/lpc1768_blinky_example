@@ -1,5 +1,8 @@
 #pragma once
 
+#include <avr/interrupt.h>
+#include <avr/sleep.h>
+
 #include <utils/BitMacros.hpp>
 #include <utils/RegisterBits.hpp>
 
@@ -9,13 +12,15 @@
 
 
 
+
+
 /**
  * @brief Global Interrupt Vector Jump Table that contains function pointers
  * which are executed in each corresponding Interrupt Service Routine.
  * This Table needs to be global in order for it to be accessible from
  * within the ISRs.
  */
-extern void (*g_VectorTable[holmes::internal::DeviceAtMega328p::s_NumInterruptVectors])(void);
+extern void (*g_VectorTable[26])(void);
 
 
 
@@ -29,7 +34,7 @@ namespace internal
  * @brief Evaluated at compile time, static(accessible only from within this source file), 
  * immutable
  */
-constexpr const static RegisterBits<uint8_t, 1> s_InterruptEnableBitMap[DeviceAtMega328p::s_NumInterruptVectors] = {
+constexpr const static RegisterBits<uint8_t, 1> s_InterruptEnableBitMap[26] = {
     {0x0, 0}, //
     {&EIMSK, INT0},
     {&EIMSK, INT1},
@@ -64,7 +69,7 @@ constexpr const static RegisterBits<uint8_t, 1> s_InterruptEnableBitMap[DeviceAt
  * @tparam  
  */
 template <>
-class InterruptVectorTable<DeviceAtMega328p, uint8_t, IRQType>
+class InterruptVectorTable<DeviceAtMega328p, DeviceAtMega328p::ValueTypeUnsigned, IRQType>
 {
     /**
      * @brief 
@@ -94,7 +99,7 @@ class InterruptVectorTable<DeviceAtMega328p, uint8_t, IRQType>
         g_VectorTable[0] = 0x0;
 
         // set default handler for all the other ISRs
-        for (uint8_t i = 1; i < DeviceAtMega328p::s_NumInterruptVectors; i++)
+        for (uint8_t i = 1; i < 26; i++)
         {
             g_VectorTable[i] = DefaultHandler;
         }
@@ -105,9 +110,9 @@ class InterruptVectorTable<DeviceAtMega328p, uint8_t, IRQType>
 
     /**
      * @brief This vector pointer needs to point to the Vector Table.
-     * The vector Table needs to have the explicit size of DeviceAtMega328p::s_NumInterruptVectors of the uint8_t.
+     * The vector Table needs to have the explicit size of 26 of the uint8_t.
      * The behaviour is undefined if the vector is accessed with offsets that are not within the
-     * range [0:DeviceAtMega328p::s_NumInterruptVectors[
+     * range [0:26[
      */
     uint8_t* m_VectorTable;
 

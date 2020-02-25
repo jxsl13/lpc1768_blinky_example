@@ -1,8 +1,5 @@
 #pragma once
 
-#include <avr/interrupt.h>
-#include <avr/sleep.h>
-
 
 namespace holmes
 {
@@ -17,13 +14,8 @@ namespace holmes
         /**
          * @brief Inherent property of the device, which discribes the value size & type.
          */
-        using ValueType = uint8_t;
-        
-        /**
-         * @brief Each dummy class is **required** to have this public static member in order to specialize
-         * the InterruptVectorTable.
-         */
-        static const ValueType s_NumInterruptVectors = {26};
+        using ValueTypeUnsigned = uint8_t;
+        using ValueTypeSigned = int8_t;
     };
   }
 }

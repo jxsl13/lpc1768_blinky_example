@@ -9,7 +9,7 @@ namespace holmes
     using DeviceSTM32F407VG = internal::DeviceSTM32F407VG;
     using IRQType = internal::IRQType;
 
-    using VectorTable = internal::InterruptVectorTable<DeviceSTM32F407VG, uint32_t, IRQType>;
+    using VectorTable = internal::InterruptVectorTable<DeviceSTM32F407VG, DeviceSTM32F407VG::ValueTypeUnsigned, IRQType>;
 
 	struct instances
 	{

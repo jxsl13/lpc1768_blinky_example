@@ -1,6 +1,8 @@
 #include "holmes_platform.hpp"
 
 #include <utils/BitMacros.hpp>
+#include "stm32f4xx.h"
+
 
 enum PortX : uint32_t
 {

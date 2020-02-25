@@ -1,11 +1,14 @@
 #include <cstring>
 
+
 #include <utils/BitMacros.hpp>
 #include <utils/RegisterBits.hpp>
 
 #include <hal/Interrupt.hpp>
 #include "InterruptType.hpp"
 #include "device.hpp"
+
+#include "LPC17xx.h"
 
 
 
@@ -15,12 +18,12 @@ namespace internal
 {
 
 /**
- * @brief Specialization of the InterruptVectorTable for the DeviceAtMega328p
+ * @brief Specialization of the InterruptVectorTable for the DeviceLPC1768
  * 
  * @tparam  
  */
 template <>
-class InterruptVectorTable<DeviceLPC1768, uint32_t, IRQType>
+class InterruptVectorTable<DeviceLPC1768, DeviceLPC1768::ValueTypeUnsigned, IRQType>
 {
     /**
      * @brief 
@@ -41,11 +44,13 @@ class InterruptVectorTable<DeviceLPC1768, uint32_t, IRQType>
          * Also LPC1768 needs the vector table to be relocated into ram in order to dynamically
          * change the function pointers.
          * Alignment 256 byte word boundary
+         * 
+         * 35 + 16 = 51
          */
-        alignas(sizeof(uint32_t) * 256) static uint32_t s_VectorTable[DeviceLPC1768::s_NumInterruptVectors];
+        alignas(sizeof(uint32_t) * 256) static uint32_t s_VectorTable[51];
         
         // copy vector table to ram location
-        std::memcpy(s_VectorTable, VectorTable, sizeof(uint32_t) * DeviceLPC1768::s_NumInterruptVectors); 
+        std::memcpy(s_VectorTable, VectorTable, sizeof(uint32_t) * 51); 
 
         /* relocate vector table into RAM*/ 
         // disable global interrupts
@@ -85,9 +90,9 @@ class InterruptVectorTable<DeviceLPC1768, uint32_t, IRQType>
 
     /**
      * @brief This vector pointer needs to point to the Vector Table.
-     * The vector Table needs to have the explicit size of DeviceAtMega328p::s_NumInterruptVectors of the uint8_t.
+     * The vector Table needs to have the explicit size of 51 of the uint8_t.
      * The behaviour is undefined if the vector is accessed with offsets that are not within the
-     * range [0:DeviceAtMega328p::s_NumInterruptVectors[
+     * range [0:51[
      */
     uint32_t* m_VectorTable;
 

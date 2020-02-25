@@ -1,6 +1,8 @@
 #include "holmes_platform.hpp"
 
 #include <utils/BitMacros.hpp>
+#include <avr/interrupt.h>
+
 
 
 static auto initGpio() -> void

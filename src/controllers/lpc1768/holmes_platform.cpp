@@ -1,6 +1,6 @@
-#include "holmes_platform.hpp"
-
+#include "LPC17xx.h"
 #include <utils/BitMacros.hpp>
+#include "holmes_platform.hpp"
 
 
 static auto initGpio() -> void
