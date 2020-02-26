@@ -69,7 +69,7 @@ constexpr const static RegisterBits<uint8_t, 1> s_InterruptEnableBitMap[26] = {
  * @tparam  
  */
 template <>
-class InterruptVectorTable<DeviceAtMega328p, DeviceAtMega328p::ValueTypeUnsigned, IRQType>
+class InterruptVectorTable<DeviceAtMega328p, IRQType>
 {
     /**
      * @brief 

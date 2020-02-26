@@ -12,7 +12,7 @@ namespace holmes
     using DeviceLPC1768 = internal::DeviceLPC1768;
     using IRQType = internal::IRQType;
 
-    using VectorTable = internal::InterruptVectorTable<DeviceLPC1768, DeviceLPC1768::ValueTypeUnsigned, IRQType>;
+    using VectorTable = internal::InterruptVectorTable<DeviceLPC1768, IRQType>;
 
 	struct instances
 	{

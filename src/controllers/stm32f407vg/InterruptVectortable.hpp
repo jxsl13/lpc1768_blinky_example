@@ -20,7 +20,7 @@ namespace internal
  * @tparam  
  */
 template <>
-class InterruptVectorTable<DeviceSTM32F407VG, DeviceSTM32F407VG::ValueTypeUnsigned, IRQType>
+class InterruptVectorTable<DeviceSTM32F407VG, IRQType>
 {
     /**
      * @brief 

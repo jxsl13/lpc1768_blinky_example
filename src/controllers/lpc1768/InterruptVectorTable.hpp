@@ -23,7 +23,7 @@ namespace internal
  * @tparam  
  */
 template <>
-class InterruptVectorTable<DeviceLPC1768, DeviceLPC1768::ValueTypeUnsigned, IRQType>
+class InterruptVectorTable<DeviceLPC1768, IRQType>
 {
     /**
      * @brief 

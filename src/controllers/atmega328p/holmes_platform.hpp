@@ -13,7 +13,7 @@ namespace holmes
     using DeviceAtMega328p = internal::DeviceAtMega328p;
     using IRQType = internal::IRQType;
 
-    using VectorTable = internal::InterruptVectorTable<DeviceAtMega328p, DeviceAtMega328p::ValueTypeUnsigned, IRQType>;
+    using VectorTable = internal::InterruptVectorTable<DeviceAtMega328p, IRQType>;
 
 	struct instances
 	{

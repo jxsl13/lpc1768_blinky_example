@@ -8,7 +8,7 @@ namespace internal
 /**
  * @brief Contains every available ResultType/Index sorted by value!
  */
-template <class Impl, class ResultType, class IRQType>
+template <class Impl, class IRQType>
 class InterruptVectorTable
 {
     /**
@@ -47,7 +47,12 @@ class InterruptVectorTable
      * 
      * @return InterruptVectorTable& 
      */
-    static auto getInstance() -> InterruptVectorTable&;
+    static auto getInstance() -> InterruptVectorTable&
+    {
+        static InterruptVectorTable instance; // Guaranteed to be destroyed.
+                                              // Instantiated on first use.
+        return instance;
+    }
 
     /**
      * @brief set specific interrupt service routine for the corresponding interrupt index.
