@@ -149,7 +149,7 @@ class InterruptVectorTable<DeviceAtMega328p, IRQType>
         cli();
     }
 
-    auto isEnabled() -> bool
+    auto isEnabledIRQ() -> bool
     {
         // check if interrupts are globally enabled (Manual Page 20)
         return IS_SET(SREG, 7);
@@ -177,7 +177,7 @@ class InterruptVectorTable<DeviceAtMega328p, IRQType>
         DISABLE(*pRegister, Bit);
     }
 
-    auto isEnabled(IRQType InterruptIndex) -> bool
+    auto isEnabledISR(IRQType InterruptIndex) -> bool
     {
         uint8_t index = static_cast<uint8_t>(InterruptIndex);
 

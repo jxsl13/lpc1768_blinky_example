@@ -123,7 +123,7 @@ class InterruptVectorTable<DeviceSTM32F407VG, IRQType>
         __disable_irq();
     }
 
-    auto isEnabled() -> bool
+    auto isEnabledIRQ() -> bool
     {
         /**
          * PRIMASK is a 1-bit-wide interrupt mask register. When set, it blocks all interrupts apart from the non-maskable 
@@ -147,7 +147,7 @@ class InterruptVectorTable<DeviceSTM32F407VG, IRQType>
         NVIC_DisableIRQ(static_cast<IRQn_Type>(InterruptIndex));
     }
 
-    auto isEnabled(IRQType InterruptIndex) -> bool
+    auto isEnabledISR(IRQType InterruptIndex) -> bool
     {
         return NVIC_GetEnableIRQ(static_cast<IRQn_Type>(InterruptIndex));
     }

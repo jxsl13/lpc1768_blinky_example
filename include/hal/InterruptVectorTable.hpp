@@ -72,7 +72,7 @@ class InterruptVectorTable
       * @return true global interrupts are enabled
       * @return false global interrupts are disabled.
       */
-    auto isEnabled() -> bool;
+    auto isEnabledIRQ() -> bool;
 
     /**
       * @brief Disable interrupt at given InterruptIndex
@@ -96,7 +96,7 @@ class InterruptVectorTable
       * @return true Interrupt Service routine is enabled.
       * @return false Interrupt Service routine is not enabled.
       */
-    auto isEnabled(IRQType InterruptIndex) -> bool;
+    auto isEnabledISR(IRQType InterruptIndex) -> bool;
 
     /**
       * @brief Triggers a software interrupt request
