@@ -47,12 +47,7 @@ class InterruptVectorTable
      * 
      * @return InterruptVectorTable& 
      */
-    static auto getInstance() -> InterruptVectorTable&
-    {
-        static InterruptVectorTable instance; // Guaranteed to be destroyed.
-                                              // Instantiated on first use.
-        return instance;
-    }
+    static auto getInstance() -> InterruptVectorTable&;
 
     /**
      * @brief set specific interrupt service routine for the corresponding interrupt index.
