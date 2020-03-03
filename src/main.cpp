@@ -64,7 +64,7 @@ int main()
 
     auto& vectorTable = holmes::instances::vectorTable();
 
-    vectorTable.setCallback(IRQ_EINT0, PushButton_Handler); // enable external interrupt service routines
+    vectorTable.setISR(IRQ_EINT0, PushButton_Handler); // enable external interrupt service routines
     vectorTable.enableISR(IRQ_EINT0);
     
 

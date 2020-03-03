@@ -127,7 +127,7 @@ class InterruptVectorTable<DeviceAtMega328p, IRQType>
         return instance;
     }
 
-    auto setCallback(IRQType InterruptIndex, void (*Callback)(void)) -> void
+    auto setISR(IRQType InterruptIndex, void (*Callback)(void)) -> void
     {
         /**
          * All needed checks are done at compile time, especially whether 

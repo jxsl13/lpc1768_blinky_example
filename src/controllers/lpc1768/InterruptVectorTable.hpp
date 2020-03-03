@@ -107,7 +107,7 @@ class InterruptVectorTable<DeviceLPC1768, IRQType>
         return instance;
     }
 
-    auto setCallback(IRQType InterruptIndex, void (*Callback)(void)) -> void
+    auto setISR(IRQType InterruptIndex, void (*Callback)(void)) -> void
     {
         uint32_t index = static_cast<uint32_t>(InterruptIndex);
     

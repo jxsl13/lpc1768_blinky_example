@@ -101,7 +101,7 @@ class InterruptVectorTable<DeviceSTM32F407VG, IRQType>
         return instance;
     }
 
-    auto setCallback(IRQType InterruptIndex, void (*Callback)(void)) -> void
+    auto setISR(IRQType InterruptIndex, void (*Callback)(void)) -> void
     {
         /**
          * It is not possible to unwrap a std::function in order to extract the function pointer! 
