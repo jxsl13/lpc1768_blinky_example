@@ -54,7 +54,7 @@ class InterruptVectorTable
      * @param InterruptIndex valid enum value, invalid value caught at compile time.
      * @param Callback Function to be called, when the Interrupt is 
      */
-    auto setCallback(IRQType InterruptIndex, void (*Callback)(void)) -> void;
+    auto setISR(IRQType InterruptIndex, void (*Callback)(void)) -> void;
 
     /**
      * @brief Enables interrupts globally
@@ -103,7 +103,7 @@ class InterruptVectorTable
       * 
       * @param InterruptIndex 
       */
-    auto triggerIRQ(IRQType InterruptIndex) -> void;
+    auto triggerISR(IRQType InterruptIndex) -> void;
 
     /**
       * @brief Wait until an interrupt is triggered.

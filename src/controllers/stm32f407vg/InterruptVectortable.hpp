@@ -152,7 +152,7 @@ class InterruptVectorTable<DeviceSTM32F407VG, IRQType>
         return NVIC_GetEnableIRQ(static_cast<IRQn_Type>(InterruptIndex));
     }
 
-    auto triggerIRQ(IRQType InterruptIndex) -> void
+    auto triggerISR(IRQType InterruptIndex) -> void
     {
         /**
          * Bits 8:0 - 256 Interrupt values (binary 0b111111111 -> 0x1FF)

@@ -160,7 +160,7 @@ class InterruptVectorTable<DeviceLPC1768, IRQType>
         return NVIC_GetEnableIRQ(static_cast<IRQn_Type>(InterruptIndex));
     }
 
-    auto triggerIRQ(IRQType InterruptIndex) -> void
+    auto triggerISR(IRQType InterruptIndex) -> void
     {
         uint32_t IRQIndex = static_cast<uint32_t>(InterruptIndex);
         /**

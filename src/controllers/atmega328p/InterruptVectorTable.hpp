@@ -187,7 +187,7 @@ class InterruptVectorTable<DeviceAtMega328p, IRQType>
         return IS_SET(*pRegister, Bit);
     }
 
-    auto triggerIRQ(IRQType InterruptIndex) -> void
+    auto triggerISR(IRQType InterruptIndex) -> void
     {
         uint8_t index = static_cast<uint8_t>(InterruptIndex);
 
