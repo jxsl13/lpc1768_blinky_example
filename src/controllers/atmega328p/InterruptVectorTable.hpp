@@ -207,7 +207,6 @@ class InterruptVectorTable<DeviceAtMega328p, IRQType>
         // SLEEP_MODE_IDLE needs 6 ticks to wake up, but does react to ALL possible interrupts.
         // other sleep modes need longer to wake up and do not react to all interrupts. (Manual Page 48)
         set_sleep_mode(SLEEP_MODE_IDLE);    // set sleep mode
-        sei();                              // enable interrupts
         sleep_mode();                       // sleep until interrupt
     }
 };

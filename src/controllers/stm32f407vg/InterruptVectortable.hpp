@@ -167,7 +167,6 @@ class InterruptVectorTable<DeviceSTM32F407VG, IRQType>
     {
         // wait for interrupt OR event
         // https://community.arm.com/developer/ip-products/processors/f/cortex-a-forum/5695/difference-between-wfi-and-wfe
-        __enable_irq();
 
         // https://community.st.com/s/question/0D50X00009XkfSY/stm32f401-stop-mode-entry
         __WFE();

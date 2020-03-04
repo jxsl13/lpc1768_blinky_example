@@ -174,7 +174,6 @@ class InterruptVectorTable<DeviceLPC1768, IRQType>
     auto waitForIRQ() -> void
     {
         // wait for interrupt OR event(interrupt that does not execute an ISR)
-        __enable_irq();
         __WFE();        // alternatively __WFI(); can be used, in order to not handle events.
     }
 };
