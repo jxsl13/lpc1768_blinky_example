@@ -20,8 +20,6 @@
  * which are executed in each corresponding Interrupt Service Routine.
  * This Table needs to be global in order for it to be accessible from
  * within the ISRs.
- * 
- * TODO: STICHWORT: INTERNAL LINKAGE
  */
 static void (*s_VectorTable[26])(void) = {0x0,};
 
