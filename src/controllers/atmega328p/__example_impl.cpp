@@ -1,3 +1,4 @@
+#include <avr/io.h>
 #include <util/delay.h>         // avr library
 #include "Interrupt.hpp"        // target specific headers
 #include <utils/BitMacros.hpp>  // hal tools
@@ -76,11 +77,6 @@ void ClearIRQCondition()
     ENABLE(EIFR, 0); // clear more or less pending bit.
 }
 
-static void PushButton_Handler()
-{
-    ToggleLED();
-    ClearIRQCondition();
-}
 
 
 

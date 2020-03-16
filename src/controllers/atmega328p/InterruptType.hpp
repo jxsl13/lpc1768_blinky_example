@@ -12,7 +12,7 @@ namespace internal
  */
 enum class IRQType : uint8_t
 {
-    //RESET_IRQn = 0,               // Not available.
+    //RESET_IRQn = 0,        // Not available.
     INT0_IRQn           = 1,
     INT1_IRQn           = 2,
     PCINT0_IRQn         = 3,
