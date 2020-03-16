@@ -163,60 +163,41 @@ namespace holmes
 namespace internal
 {
 
-
-
-/**
- * @brief Evaluated at compile time, static(accessible only from within this source file), 
- * immutable
- */
-constexpr const static RegisterBits<uint8_t, 1> s_InterruptEnableBitMap[26] = {
-    {0x0, 0}, //
-    {&EIMSK, INT0},
-    {&EIMSK, INT1},
-    {&PCICR, PCIE0},
-    {&PCICR, PCIE1},
-    {&PCICR, PCIE2},
-    {&WDTCSR, WDIE},
-    {&TIMSK2, OCIE2A},
-    {&TIMSK2, OCIE2B},
-    {&TIMSK2, TOIE2},
-    {&TIMSK1, ICIE1},
-    {&TIMSK1, OCIE1A},
-    {&TIMSK1, OCIE1B},
-    {&TIMSK1, TOIE1},
-    {&TIMSK0, OCIE0A},
-    {&TIMSK0, OCIE0B},
-    {&TIMSK0, TOIE0},
-    {&SPCR, SPIE},
-    {&UCSR0B, RXCIE0},
-    {&UCSR0B, UDRIE0},
-    {&UCSR0B, TXCIE0},
-    {&ADCSRA, ADIE},
-    {&EECR, EERIE},
-    {&ACSR, ACIE},
-    {&TWCR, TWIE},
-    {&SPMCSR, SPMIE},
-};
-
-/**
- * @brief Specialization of the InterruptVectorTable for the DeviceAtMega328p
- * 
- * @tparam  
- */
-template <>
-class InterruptVectorTable<DeviceAtMega328p, IRQType>
-{
     /**
-     * @brief 
-     * Singleton design pattern:
-     * https://stackoverflow.com/questions/1008019/c-singleton-design-pattern
+     * @brief Evaluated at compile time, static(accessible only from within this source file), 
+     * immutable
      */
+    constexpr const static RegisterBits<uint8_t, 1> s_InterruptEnableBitMap[26] = {
+        {0x0, 0}, //
+        {&EIMSK, INT0},
+        {&EIMSK, INT1},
+        {&PCICR, PCIE0},
+        {&PCICR, PCIE1},
+        {&PCICR, PCIE2},
+        {&WDTCSR, WDIE},
+        {&TIMSK2, OCIE2A},
+        {&TIMSK2, OCIE2B},
+        {&TIMSK2, TOIE2},
+        {&TIMSK1, ICIE1},
+        {&TIMSK1, OCIE1A},
+        {&TIMSK1, OCIE1B},
+        {&TIMSK1, TOIE1},
+        {&TIMSK0, OCIE0A},
+        {&TIMSK0, OCIE0B},
+        {&TIMSK0, TOIE0},
+        {&SPCR, SPIE},
+        {&UCSR0B, RXCIE0},
+        {&UCSR0B, UDRIE0},
+        {&UCSR0B, TXCIE0},
+        {&ADCSRA, ADIE},
+        {&EECR, EERIE},
+        {&ACSR, ACIE},
+        {&TWCR, TWIE},
+        {&SPMCSR, SPMIE},
+    };
 
-   private:
-    /**
-     * @brief Construct a new Interrupt Vector Table object
-     */
-    InterruptVectorTable()
+
+    InterruptVectorTable<DeviceAtMega328p, IRQType>::InterruptVectorTable()
     {
         /**
          * Disable interrupts globally, 
@@ -243,17 +224,8 @@ class InterruptVectorTable<DeviceAtMega328p, IRQType>
         m_VectorTable = reinterpret_cast<uint8_t*>(s_VectorTable);
     }
 
-    /**
-     * @brief This vector pointer needs to point to the Vector Table.
-     * The vector Table needs to have the explicit size of 26 of the uint8_t.
-     * The behaviour is undefined if the vector is accessed with offsets that are not within the
-     * range [0:26[
-     */
-    uint8_t* m_VectorTable;
-
-   public:
     
-    static auto getInstance() -> InterruptVectorTable&
+    auto InterruptVectorTable<DeviceAtMega328p, IRQType>::getInstance() -> InterruptVectorTable&
     {   
         // Info: It is not possible to properly define desructors for rather complex
         // types, in this case a static variable, thus destructors have been omitted.
@@ -262,7 +234,7 @@ class InterruptVectorTable<DeviceAtMega328p, IRQType>
         return instance;
     }
 
-    auto setISR(IRQType InterruptIndex, void (*Callback)(void)) -> void
+    auto InterruptVectorTable<DeviceAtMega328p, IRQType>::setISR(IRQType InterruptIndex, void (*Callback)(void)) -> void
     {
         /**
          * All needed checks are done at compile time, especially whether 
@@ -272,25 +244,25 @@ class InterruptVectorTable<DeviceAtMega328p, IRQType>
         s_VectorTable[static_cast<uint8_t>(InterruptIndex)] = Callback;
     }
 
-    auto enableIRQ() -> void
+    auto InterruptVectorTable<DeviceAtMega328p, IRQType>::enableIRQ() -> void
     {
         // Set interrupt enabled
         sei();
     }
 
-    auto disableIRQ() -> void
+    auto InterruptVectorTable<DeviceAtMega328p, IRQType>::disableIRQ() -> void
     {
         // clear interrupt enabled
         cli();
     }
 
-    auto isEnabledIRQ() -> bool
+    auto InterruptVectorTable<DeviceAtMega328p, IRQType>::isEnabledIRQ() -> bool
     {
         // check if interrupts are globally enabled (Manual Page 20)
         return IS_SET(SREG, 7);
     }
 
-    auto enableISR(IRQType InterruptIndex) -> void
+    auto InterruptVectorTable<DeviceAtMega328p, IRQType>::enableISR(IRQType InterruptIndex) -> void
     {
         uint8_t index = static_cast<uint8_t>(InterruptIndex);
 
@@ -302,7 +274,7 @@ class InterruptVectorTable<DeviceAtMega328p, IRQType>
         ENABLE(*pRegister, Bit);
     }
 
-    auto disableISR(IRQType InterruptIndex) -> void
+    auto InterruptVectorTable<DeviceAtMega328p, IRQType>::disableISR(IRQType InterruptIndex) -> void
     {
         uint8_t index = static_cast<uint8_t>(InterruptIndex);
 
@@ -312,7 +284,7 @@ class InterruptVectorTable<DeviceAtMega328p, IRQType>
         DISABLE(*pRegister, Bit);
     }
 
-    auto isEnabledISR(IRQType InterruptIndex) -> bool
+    auto InterruptVectorTable<DeviceAtMega328p, IRQType>::isEnabledISR(IRQType InterruptIndex) -> bool
     {
         uint8_t index = static_cast<uint8_t>(InterruptIndex);
 
@@ -322,7 +294,7 @@ class InterruptVectorTable<DeviceAtMega328p, IRQType>
         return IS_SET(*pRegister, Bit);
     }
 
-    auto triggerISR(IRQType InterruptIndex) -> void
+    auto InterruptVectorTable<DeviceAtMega328p, IRQType>::triggerISR(IRQType InterruptIndex) -> void
     {
         uint8_t index = static_cast<uint8_t>(InterruptIndex);
 
@@ -337,22 +309,16 @@ class InterruptVectorTable<DeviceAtMega328p, IRQType>
         s_VectorTable[index]();
     }
 
-    auto waitForIRQ() -> void
+    auto InterruptVectorTable<DeviceAtMega328p, IRQType>::waitForIRQ() -> void
     {
         // SLEEP_MODE_IDLE needs 6 ticks to wake up, but does react to ALL possible interrupts.
         // other sleep modes need longer to wake up and do not react to all interrupts. (Manual Page 48)
         set_sleep_mode(SLEEP_MODE_IDLE);    // set sleep mode
         sleep_mode();                       // sleep until interrupt
     }
-};
 
 
 } // namespace internal
 } // namespace holmes
-
-
-
-
-//template class InterruptVectorTable<holmes::internal::DeviceAtMega328p, holmes::internal::IRQType>;
 
 
