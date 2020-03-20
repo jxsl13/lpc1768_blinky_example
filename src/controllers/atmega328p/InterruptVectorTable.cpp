@@ -11,20 +11,15 @@
 #include "InterruptVectorTable.hpp"
 
 
-
-
-
-
 /**
  * @brief Global Interrupt Vector Jump Table that contains function pointers
  * which are executed in each corresponding Interrupt Service Routine.
  * This Table needs to be global in order for it to be accessible from
  * within the ISRs.
+ * 
+ * The RESET IRQ is being ignored, thus only 25 of 26 interrupts are defined.
  */
-static void (*s_VectorTable[26])(void) = {0x0,};
-
-
-
+static void (*s_VectorTable[25])(void) = {0x0,};
 
 
 #define INT0_vect _VECTOR(1)          /* External Interrupt Request 0 */
@@ -55,103 +50,103 @@ static void (*s_VectorTable[26])(void) = {0x0,};
 
 ISR(INT0_vect)
 {
-    s_VectorTable[1]();
+    s_VectorTable[0]();
 }
 ISR(INT1_vect)
 {
-    s_VectorTable[2]();
+    s_VectorTable[1]();
 }
 ISR(PCINT0_vect)
 {
-    s_VectorTable[3]();
+    s_VectorTable[2]();
 }
 ISR(PCINT1_vect)
 {
-    s_VectorTable[4]();
+    s_VectorTable[3]();
 }
 ISR(PCINT2_vect)
 {
-    s_VectorTable[5]();
+    s_VectorTable[4]();
 }
 ISR(WDT_vect)
 {
-    s_VectorTable[6]();
+    s_VectorTable[5]();
 }
 ISR(TIMER2_COMPA_vect)
 {
-    s_VectorTable[7]();
+    s_VectorTable[6]();
 }
 ISR(TIMER2_COMPB_vect)
 {
-    s_VectorTable[8]();
+    s_VectorTable[7]();
 }
 ISR(TIMER2_OVF_vect)
 {
-    s_VectorTable[9]();
+    s_VectorTable[8]();
 }
 ISR(TIMER1_CAPT_vect)
 {
-    s_VectorTable[10]();
+    s_VectorTable[9]();
 }
 ISR(TIMER1_COMPA_vect)
 {
-    s_VectorTable[11]();
+    s_VectorTable[10]();
 }
 ISR(TIMER1_COMPB_vect)
 {
-    s_VectorTable[12]();
+    s_VectorTable[11]();
 }
 ISR(TIMER1_OVF_vect)
 {
-    s_VectorTable[13]();
+    s_VectorTable[12]();
 }
 ISR(TIMER0_COMPA_vect)
 {
-    s_VectorTable[14]();
+    s_VectorTable[13]();
 }
 ISR(TIMER0_COMPB_vect)
 {
-    s_VectorTable[15]();
+    s_VectorTable[14]();
 }
 ISR(TIMER0_OVF_vect)
 {
-    s_VectorTable[16]();
+    s_VectorTable[15]();
 }
 ISR(SPI_STC_vect)
 {
-    s_VectorTable[17]();
+    s_VectorTable[16]();
 }
 ISR(USART_RXC_vect)
 {
-    s_VectorTable[18]();
+    s_VectorTable[17]();
 }
 ISR(USART_UDRE_vect)
 {
-    s_VectorTable[19]();
+    s_VectorTable[18]();
 }
 ISR(USART_TXC_vect)
 {
-    s_VectorTable[20]();
+    s_VectorTable[19]();
 }
 ISR(ADC_vect)
 {
-    s_VectorTable[21]();
+    s_VectorTable[20]();
 }
 ISR(EE_READY_vect)
 {
-    s_VectorTable[22]();
+    s_VectorTable[21]();
 }
 ISR(ANALOG_COMP_vect)
 {
-    s_VectorTable[23]();
+    s_VectorTable[22]();
 }
 ISR(TWI_vect)
 {
-    s_VectorTable[24]();
+    s_VectorTable[23]();
 }
 ISR(SPM_READY_vect)
 {
-    s_VectorTable[25]();
+    s_VectorTable[24]();
 }
 
 
@@ -164,9 +159,10 @@ namespace internal
     /**
      * @brief Evaluated at compile time, static(accessible only from within this source file), 
      * immutable
+     * 
+     * The RESET interrupt is ignore,d thus only 25 interrupts are used in total.
      */
-    constexpr const static RegisterBits<uint8_t, 1> s_InterruptEnableBitMap[26] = {
-        {0x0, 0}, //
+    constexpr const static RegisterBits<uint8_t, 1> s_InterruptEnableBitMap[25] = {
         {&EIMSK, INT0},
         {&EIMSK, INT1},
         {&PCICR, PCIE0},
@@ -209,11 +205,9 @@ namespace internal
          */
         auto DefaultHandler = []() -> void {};
 
-        // RESET cannot be set via the interrupt vector table
-        s_VectorTable[0] = 0x0;
 
-        // set default handler for all the other ISRs
-        for (uint8_t i = 1; i < 26; i++)
+        // set default handler for all the ISRs
+        for (uint8_t i = 0; i < 25; i++)
         {
             s_VectorTable[i] = DefaultHandler;
         }
