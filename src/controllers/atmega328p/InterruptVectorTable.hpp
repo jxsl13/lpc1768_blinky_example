@@ -23,14 +23,6 @@ namespace holmes
              */
             InterruptVectorTable();
 
-            /**
-             * @brief This vector pointer needs to point to the Vector Table.
-             * The vector Table needs to have the explicit size of 26 of the uint8_t.
-             * The behaviour is undefined if the vector is accessed with offsets that are not within the
-             * range [0:26[
-             */
-            uint8_t* m_VectorTable;
-
            public:
 
             static auto getInstance() -> InterruptVectorTable&;

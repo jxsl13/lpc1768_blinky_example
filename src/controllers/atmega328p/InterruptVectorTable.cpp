@@ -21,7 +21,11 @@
  */
 static void (*s_VectorTable[25])(void) = {0x0,};
 
-
+/**
+ * This is simply a redefinition of the already existing macros, 
+ * that are not directly visible, but can be seen in the 
+ * avr-libc documentation.
+ */
 #define INT0_vect _VECTOR(1)          /* External Interrupt Request 0 */
 #define INT1_vect _VECTOR(2)          /* External Interrupt Request 1 */
 #define PCINT0_vect _VECTOR(3)        /* Pin Change Interrupt Request 0 */
@@ -190,7 +194,7 @@ namespace internal
         {&SPMCSR, SPMIE},
     };
 
-
+    
     InterruptVectorTable<DeviceAtMega328p, IRQType>::InterruptVectorTable()
     {
         /**
@@ -211,9 +215,6 @@ namespace internal
         {
             s_VectorTable[i] = DefaultHandler;
         }
-
-        // set member variable to point at the static array.
-        m_VectorTable = reinterpret_cast<uint8_t*>(s_VectorTable);
     }
 
     
