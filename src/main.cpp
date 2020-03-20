@@ -3,19 +3,19 @@
     #include <controllers/atmega328p/holmes_platform.hpp>     // Target specific interrupt header
 
     using IRQType = holmes::IRQType;
-    constexpr IRQType IRQ_EINT0 = IRQType::INT0_IRQn;
+    constexpr IRQType IRQ_EINT0 = IRQType::IRQn_INT0;
 
 
 #elif defined LPC1768
     #include <controllers/lpc1768/holmes_platform.hpp>
     using IRQType = holmes::IRQType;
-    constexpr IRQType IRQ_EINT0 = IRQType::EINT0_IRQn;
+    constexpr IRQType IRQ_EINT0 = IRQType::IRQn_EINT0;
 
 #elif defined STM32F407VG
     #include <controllers/stm32f407vg/holmes_platform.hpp>
 
     using IRQType = holmes::IRQType;
-    constexpr IRQType IRQ_EINT0 = IRQType::EXTI0_IRQn;
+    constexpr IRQType IRQ_EINT0 = IRQType::IRQn_EXTI0;
 #endif
 
 
