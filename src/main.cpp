@@ -1,10 +1,10 @@
 
+// Target specific interrupt headers
 #if defined ATMEGA328P
-    #include <controllers/atmega328p/holmes_platform.hpp>     // Target specific interrupt header
+    #include <controllers/atmega328p/holmes_platform.hpp>     
 
     using IRQType = holmes::IRQType;
     constexpr IRQType IRQ_EINT0 = IRQType::IRQn_INT0;
-
 
 #elif defined LPC1768
     #include <controllers/lpc1768/holmes_platform.hpp>
@@ -19,7 +19,6 @@
 #endif
 
 
-
 /**
  * @brief These are being implemented in _example_impl.cpp
  *      for each target specifically.
@@ -27,7 +26,6 @@
  */
 extern void delay_ms(unsigned int);
 extern void ToggleLED();
-extern void EnableLED();
 extern void DisableLED();
 
 // clears external interrupt pending flag
@@ -48,40 +46,22 @@ void PushButton_Handler()
 }
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 int main()
 {   
-    
-
     holmes::init();
-
     DisableLED();
-
 
     auto& vectorTable = holmes::instances::vectorTable();
 
     vectorTable.setISR(IRQ_EINT0, PushButton_Handler); // enable external interrupt service routines
     vectorTable.enableISR(IRQ_EINT0);
     
-
     // enable global interrupts
     vectorTable.enableIRQ(); 
-
 
     while(1)
     {
         vectorTable.waitForIRQ();
-        Blinking(1, 500);    // toggle twice with 500ms inbetween                
+        Blinking(1, 500);    // toggle twice with 500ms in between                
     } 
 }
-
-
-#ifdef __cplusplus
-}
-#endif
-
-
