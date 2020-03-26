@@ -1,8 +1,10 @@
 #pragma once
 
-#include <hal/Interrupt.hpp>
+#include <hal/InterruptVectorTable.hpp>
+
 #include "device.hpp"
 #include "InterruptType.hpp"
+
 
 namespace holmes
 {

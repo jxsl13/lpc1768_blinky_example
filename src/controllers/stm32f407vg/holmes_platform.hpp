@@ -1,9 +1,8 @@
 #pragma once
 
 #include <hal/Interrupt.hpp>
+
 #include "Interrupt.hpp"
-
-
 
 
 namespace holmes

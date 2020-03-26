@@ -1,11 +1,9 @@
 #pragma once
-
 #include <stdint.h>
+
 #include <hal/Interrupt.hpp>
+
 #include "Interrupt.hpp"
-
-
-
 
 
 namespace holmes
@@ -23,5 +21,4 @@ namespace holmes
 	};
 
 	auto init() -> void;
-
 }

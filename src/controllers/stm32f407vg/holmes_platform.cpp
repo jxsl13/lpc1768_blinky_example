@@ -1,7 +1,9 @@
-#include "holmes_platform.hpp"
+
+#include "stm32f4xx.h"
 
 #include <utils/BitMacros.hpp>
-#include "stm32f4xx.h"
+
+#include "holmes_platform.hpp"
 
 
 enum PortX : uint32_t
@@ -102,7 +104,7 @@ static auto initEXTI() -> void
 
 auto holmes::init() -> void
 {
+    initVectorTable();
 	initGpio();
     initEXTI();
-    initVectorTable();
 }

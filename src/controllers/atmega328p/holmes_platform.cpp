@@ -1,8 +1,8 @@
-#include "holmes_platform.hpp"
-
-#include <utils/BitMacros.hpp>
 #include <avr/interrupt.h>
 
+#include <utils/BitMacros.hpp>
+
+#include "holmes_platform.hpp"
 
 
 static auto initGpio() -> void
@@ -38,8 +38,7 @@ static auto initEXTI() -> void
 
 auto holmes::init() -> void
 {
-    initGpio();
     initVectorTable();
-    initEXTI();
-	
+    initGpio();
+    initEXTI();	
 }

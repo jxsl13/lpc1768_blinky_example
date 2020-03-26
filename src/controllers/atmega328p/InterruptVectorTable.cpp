@@ -4,10 +4,7 @@
 #include <utils/BitMacros.hpp>
 #include <utils/RegisterBits.hpp>
 
-#include <hal/Interrupt.hpp>
-#include "InterruptType.hpp"
 #include "device.hpp"
-
 #include "InterruptVectorTable.hpp"
 
 

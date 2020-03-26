@@ -1,13 +1,10 @@
+#pragma once
+
 #include <cstring>
-
-#include <utils/BitMacros.hpp>
-#include <utils/RegisterBits.hpp>
-
-#include <hal/Interrupt.hpp>
-#include "InterruptType.hpp"
-#include "device.hpp"
-
 #include "stm32f4xx.h"
+
+#include "device.hpp"
+#include "InterruptType.hpp"
 
 
 namespace holmes
