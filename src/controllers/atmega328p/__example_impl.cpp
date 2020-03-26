@@ -1,6 +1,5 @@
 #include <avr/io.h>
 #include <util/delay.h>         // avr library
-#include "Interrupt.hpp"        // target specific headers
 #include <utils/BitMacros.hpp>  // hal tools
 
 
