@@ -12,7 +12,6 @@ void delay_ms(unsigned int ms)
     }
 }
 
-
 void InitGPIO()
 {
 
@@ -40,31 +39,10 @@ void InitExtInt0()
     DISABLE(EICRA, ISC00);
 }
 
-void InitWatchDogTimer()
-{  
-    WDTCSR |= (1<<WDCE) | (1<<WDE); // allows modification of WDT, is cleared after 4 cycles(Page 60/64)
-
-    // prescaler set to 4 seconds
-    // only trigger interrupt, no system reset
-    // add "(1<<WDE) |" in order to also trigger a system reset on wdt timeout.
-    WDTCSR  = (1<<WDE) | (1 <<WDP2) | (1<<WDP1);
-}
-
-void FeedWatchDog()
-{
-    DISABLE(MCUSR, WDRF);
-}
-
-
 void ToggleLED()
 {
     // toggle the LED
     TOGGLE(PORTB, PORTB5);    
-}
-
-void EnableLED()
-{
-    ENABLE(PORTB, PORTB5); 
 }
 
 void DisableLED()

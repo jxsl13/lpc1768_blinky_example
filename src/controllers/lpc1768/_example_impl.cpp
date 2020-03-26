@@ -44,33 +44,9 @@ void InitExtInt0()
     ENABLE(LPC_SC->EXTPOLAR, 0);    // Configure EINTx as Falling Edge      
 }
 
-void InitWatchDogTimer()
-{
-    // use PLL0's source
-    uint32_t clockSource = LPC_SC->CLKSRCSEL & 0b11;
-    LPC_WDT->WDCLKSEL = clockSource;    //PCLK. Selects the APB peripheral clock (watchdog pclk) as the Watchdog clock source.
-
-    LPC_WDT->TC = 5000000;            // timout interval
-    LPC_WDT->MOD = 0x03;              // enable interrupt trigger, hardware reset & enable WDT, not recoverable
-
-    // WDT reset sequence to prevent timeout
-    LPC_WDT->FEED = 0xAA;
-    LPC_WDT->FEED = 0x55;
-}
-
-void FeedWatchDog()
-{
-    LPC_WDT->FEED = 0xAA;
-    LPC_WDT->FEED = 0x55;
-}
-
 void ToggleLED()
 {
     TOGGLE(LPC_GPIO1->FIOPIN, 28);
-}
-void EnableLED()
-{
-    ENABLE(LPC_GPIO1->FIOPIN, 28);
 }
 
 void DisableLED()
