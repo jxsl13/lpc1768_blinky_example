@@ -53,7 +53,8 @@ int main()
 
     auto& vectorTable = holmes::instances::vectorTable();
 
-    vectorTable.setISR(IRQ_EINT0, PushButton_Handler); // enable external interrupt service routines
+    // PushButton_Handler is called when INT0/EINT0/EXTI0 is triggered
+    vectorTable.setISR(IRQ_EINT0, PushButton_Handler);
     vectorTable.enableISR(IRQ_EINT0);
     
     // enable global interrupts
@@ -62,6 +63,6 @@ int main()
     while(1)
     {
         vectorTable.waitForIRQ();
-        Blinking(1, 500);    // toggle twice with 500ms in between                
+        Blinking(1, 500);    // toggle twice with 500ms delay                
     } 
 }
