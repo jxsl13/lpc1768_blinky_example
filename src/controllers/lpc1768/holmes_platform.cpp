@@ -40,8 +40,7 @@ static auto initEXTI() -> void
 
 auto holmes::init() -> void
 {
-    initGpio();
     initVectorTable();
+    initGpio();
     initEXTI();
-	
 }

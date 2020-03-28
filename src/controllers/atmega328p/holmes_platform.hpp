@@ -10,6 +10,7 @@ namespace holmes
 {
     using DeviceAtMega328p = internal::DeviceAtMega328p;
     using IRQType = internal::IRQType;
+	using ExtIntType = internal::ExternalInterrupt<DeviceAtMega328p, internal::ExtIntIndexType, internal::ExtIntTriggerType>;
 	
     using VectorTable = internal::InterruptVectorTable<DeviceAtMega328p, IRQType>;
 

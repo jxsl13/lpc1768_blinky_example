@@ -10,6 +10,10 @@ namespace holmes
     using DeviceLPC1768 = internal::DeviceLPC1768;
     using IRQType = internal::IRQType;
 
+
+
+	using ExtIntType = internal::ExternalInterrupt<DeviceLPC1768, internal::ExtIntIndexType, internal::ExtIntTriggerType>;
+
     using VectorTable = internal::InterruptVectorTable<DeviceLPC1768, IRQType>;
 
 	struct instances
