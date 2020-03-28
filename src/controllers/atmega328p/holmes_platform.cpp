@@ -19,8 +19,8 @@ static auto initGpio() -> void
     DISABLE(PORTB, PORTB5);
 
     // Make Port D2 Input External Interrupt
-    DISABLE(DDRD, DDD2);
-    ENABLE(PORTD, PORTD2);
+    //DISABLE(DDRD, DDD2);
+    //ENABLE(PORTD, PORTD2);
 }
 
 static auto initVectorTable() -> void
@@ -32,8 +32,8 @@ static auto initEXTI() -> void
 {
     // Manual - Page 80
     // The falling edge of INT0 generates an interrupt request.
-    ENABLE(EICRA, ISC01);
-    DISABLE(EICRA, ISC00);
+    //ENABLE(EICRA, ISC01);
+    //DISABLE(EICRA, ISC00);
 }
 
 auto holmes::init() -> void
