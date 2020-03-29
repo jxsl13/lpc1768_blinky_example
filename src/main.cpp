@@ -58,6 +58,7 @@ void Blinking(unsigned int times = 1, unsigned int ms = 300)
 
 void PushButton_Handler()
 {
+    Blinking(1, 500);    // Blink with ~500 ms delay
     ExtIntType::clearPendingBitOf(IDX_EXTI0);
 }
 
@@ -81,6 +82,6 @@ int main()
     while(1)
     {
         vectorTable.waitForIRQ();
-        Blinking(1, 500);    // toggle twice with 500ms delay                
+        Blinking(4, 250);
     } 
 }
