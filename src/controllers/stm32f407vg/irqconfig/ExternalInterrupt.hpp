@@ -391,7 +391,7 @@ namespace internal
     };
 
     /**
-     * Rising trigger selection register (EXTE_RTSR)
+     * Rising trigger selection register (EXTI_RTSR)
      * Falling trigger selection register (EXTI_FTSR)
      * 
      * EXTI_RTSR    EXTI_FTSR

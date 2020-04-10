@@ -31,9 +31,6 @@ class InterruptVectorTable<DeviceSTM32F407VG, IRQType>
      */
     InterruptVectorTable()
     {
-        // disable global interrupts
-        disableIRQ();
-
         uint32_t *VectorTable = (uint32_t *)SCB->VTOR;
 
         /**
@@ -47,6 +44,10 @@ class InterruptVectorTable<DeviceSTM32F407VG, IRQType>
 
         /* relocate vector table into RAM*/
         std::memcpy(s_VectorTable, VectorTable, sizeof(uint32_t) * 98);
+
+
+        // disable global interrupts
+        disableIRQ();
 
         /* 
             VTOR bit assignment
@@ -128,8 +129,8 @@ class InterruptVectorTable<DeviceSTM32F407VG, IRQType>
          * priority.
          * https://www.keil.com/pack/doc/CMSIS/Core/html/group__Core__Register__gr.html#ga799b5d9a2ae75e459264c8512c7c0e02
          * 
-         * 1 -> global interrupts are enabled
-         * 0 -> global interrupts are disabled
+         * 0 -> global interrupts are enabled
+         * 1 -> global interrupts are disabled
          */
         return __get_PRIMASK() == 0;
     }
