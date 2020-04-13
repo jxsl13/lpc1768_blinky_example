@@ -10,19 +10,13 @@ namespace holmes
     namespace internal
     {
 
-    ExternalInterrupt<DeviceSTM32F407VG, ExtIntIndexType, ExtIntTriggerType>::ExternalInterrupt(IndexType InterruptIndex, TriggerType Trigger)
+    ExternalInterrupt<DeviceSTM32F407VG, ExtIntConfigType, ExtIntTriggerType>::ExternalInterrupt(ConfigType InterruptIndex, TriggerType Trigger)
     {
-        m_Index = InterruptIndex;
+        m_Config = InterruptIndex;
         m_Trigger = static_cast<ValueType>(Trigger); // in order to do less conversions later on.
     }
 
-
-    auto ExternalInterrupt<DeviceSTM32F407VG, ExtIntIndexType, ExtIntTriggerType>::getTrigger() const -> TriggerType 
-    { 
-        return static_cast<TriggerType>(m_Trigger); 
-    }
-
-    auto ExternalInterrupt<DeviceSTM32F407VG, ExtIntIndexType, ExtIntTriggerType>::applyTo(ExtIntIndexType InterruptIndex) const -> void
+    auto ExternalInterrupt<DeviceSTM32F407VG, ExtIntConfigType, ExtIntTriggerType>::applyTo(ExtIntConfigType InterruptIndex) const -> void
     {
         ValueType Value = static_cast<ValueType>(InterruptIndex);
     
@@ -58,13 +52,7 @@ namespace holmes
         {
             DISABLE(EXTI->RTSR, Index);
         }
-
-        /** 
-         *
-         * interrupts above 15 are not defined, events above 15 are defined and might be enabled, but are
-         * already wired to specific pins/functions, so we cannot wire them here anymore.
-         * See Page 383 in the STM32F407VG Reference Manual
-         */
+        
         if(Index >= 16)
             return;
         
@@ -78,20 +66,20 @@ namespace holmes
         RCC->APB2ENR = tmp; // disable clock again.
     }
 
-    auto ExternalInterrupt<DeviceSTM32F407VG, ExtIntIndexType, ExtIntTriggerType>::apply() const -> void
+    auto ExternalInterrupt<DeviceSTM32F407VG, ExtIntConfigType, ExtIntTriggerType>::apply() const -> void
     {
-        applyTo(m_Index);
+        applyTo(m_Config);
     }
 
-    auto ExternalInterrupt<DeviceSTM32F407VG, ExtIntIndexType, ExtIntTriggerType>::clearPendingBitOf(ExtIntIndexType InterruptIndex) -> void
+    auto ExternalInterrupt<DeviceSTM32F407VG, ExtIntConfigType, ExtIntTriggerType>::clearPendingBitOf(ExtIntConfigType InterruptIndex) -> void
     {
         ValueType Index = (static_cast<ValueType>(InterruptIndex) >> 16) & 0xFF;    // get bits [23:16]
         ENABLE(EXTI->PR, Index);
     }
 
-    auto ExternalInterrupt<DeviceSTM32F407VG, ExtIntIndexType, ExtIntTriggerType>::clearPendingBit() -> void
+    auto ExternalInterrupt<DeviceSTM32F407VG, ExtIntConfigType, ExtIntTriggerType>::clearPendingBit() -> void
     {
-        clearPendingBitOf(m_Index);
+        clearPendingBitOf(m_Config);
     }
         
     } // namespace internal

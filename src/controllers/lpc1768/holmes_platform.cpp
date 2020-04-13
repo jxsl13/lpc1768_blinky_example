@@ -33,9 +33,7 @@ static auto initVectorTable() -> void
 
 static auto initEXTI() -> void
 {
-    ENABLE(LPC_SC->EXTINT, 0);      // Clear Pending interrupts
-    ENABLE(LPC_SC->EXTMODE, 0);     // Configure EINTx as Edge Triggered
-    ENABLE(LPC_SC->EXTPOLAR, 0);    // Configure EINTx as Falling Edge
+    
 }
 
 auto holmes::init() -> void

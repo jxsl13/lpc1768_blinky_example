@@ -9,19 +9,19 @@ namespace holmes
     namespace internal
     {
 
-    ExternalInterrupt<DeviceLPC1768, ExtIntIndexType, ExtIntTriggerType>::ExternalInterrupt(IndexType InterruptIndex, TriggerType Trigger)
+    ExternalInterrupt<DeviceLPC1768, ExtIntConfigType, ExtIntTriggerType>::ExternalInterrupt(ConfigType InterruptIndex, TriggerType Trigger)
     {
-        m_Index = InterruptIndex;
+        m_Config = InterruptIndex;
         m_Trigger = static_cast<ValueType>(Trigger); // in order to do less conversions later on.
     };
 
 
-    auto ExternalInterrupt<DeviceLPC1768, ExtIntIndexType, ExtIntTriggerType>::getTrigger() const -> TriggerType 
+    auto ExternalInterrupt<DeviceLPC1768, ExtIntConfigType, ExtIntTriggerType>::getTrigger() const -> TriggerType 
     { 
         return static_cast<TriggerType>(m_Trigger); 
     }
 
-    auto ExternalInterrupt<DeviceLPC1768, ExtIntIndexType, ExtIntTriggerType>::applyTo(ExtIntIndexType InterruptIndex) const -> void
+    auto ExternalInterrupt<DeviceLPC1768, ExtIntConfigType, ExtIntTriggerType>::applyTo(ExtIntConfigType InterruptIndex) const -> void
     {
         ValueType Index = static_cast<ValueType>(InterruptIndex);
 
@@ -42,12 +42,12 @@ namespace holmes
 
     }
 
-    auto ExternalInterrupt<DeviceLPC1768, ExtIntIndexType, ExtIntTriggerType>::apply() const -> void
+    auto ExternalInterrupt<DeviceLPC1768, ExtIntConfigType, ExtIntTriggerType>::apply() const -> void
     {
-        applyTo(m_Index);
+        applyTo(m_Config);
     };
 
-    auto ExternalInterrupt<DeviceLPC1768, ExtIntIndexType, ExtIntTriggerType>::clearPendingBitOf(ExtIntIndexType InterruptIndex) -> void
+    auto ExternalInterrupt<DeviceLPC1768, ExtIntConfigType, ExtIntTriggerType>::clearPendingBitOf(ExtIntConfigType InterruptIndex) -> void
     {
        /**
         * clear Pending bit
@@ -56,9 +56,9 @@ namespace holmes
         ENABLE(LPC_SC->EXTINT, static_cast<ValueType>(InterruptIndex));
     }
 
-    auto ExternalInterrupt<DeviceLPC1768, ExtIntIndexType, ExtIntTriggerType>::clearPendingBit() -> void
+    auto ExternalInterrupt<DeviceLPC1768, ExtIntConfigType, ExtIntTriggerType>::clearPendingBit() -> void
     {
-        clearPendingBitOf(m_Index);
+        clearPendingBitOf(m_Config);
     };
 
 

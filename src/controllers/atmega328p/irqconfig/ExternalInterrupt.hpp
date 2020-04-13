@@ -8,34 +8,34 @@ namespace holmes
 namespace internal
 {
     // forward declaration
-    enum class ExtIntIndexType : DeviceAtMega328p::ValueTypeUnsigned;
+    enum class ExtIntConfigType : DeviceAtMega328p::ValueTypeUnsigned;
     enum class ExtIntTriggerType : DeviceAtMega328p::ValueTypeUnsigned;
 
     template<>
-    class ExternalInterrupt<DeviceAtMega328p, ExtIntIndexType, ExtIntTriggerType>
+    class ExternalInterrupt<DeviceAtMega328p, ExtIntConfigType, ExtIntTriggerType>
     {   
         // only used internally
         using ValueType = DeviceAtMega328p::ValueTypeUnsigned;
 
     public:
-        using IndexType = ExtIntIndexType;
+        using ConfigType = ExtIntConfigType;
         using TriggerType = ExtIntTriggerType;
 
-        ExternalInterrupt(IndexType InterruptIndex, TriggerType Trigger);
+        ExternalInterrupt(ConfigType InterruptIndex, TriggerType Trigger);
         auto getTrigger() const -> TriggerType;
-        auto applyTo(IndexType InterruptIndex) const -> void;
+        auto applyTo(ConfigType InterruptIndex) const -> void;
         auto apply() const -> void;
-        static auto clearPendingBitOf(IndexType InterruptIndex) -> void;
+        static auto clearPendingBitOf(ConfigType InterruptIndex) -> void;
         auto clearPendingBit() -> void;
     
     private:
-        IndexType m_Index;
+        ConfigType m_Config;
         ValueType m_Trigger;
     };
 
-    enum class ExtIntIndexType : DeviceAtMega328p::ValueTypeUnsigned {
-        IDX_INT0 = 0,
-        IDX_INT1 = 1,
+    enum class ExtIntConfigType : DeviceAtMega328p::ValueTypeUnsigned {
+        CFG_INT0_PD2 = 0,
+        CFG_INT1_PD3 = 1,
     };
 
     enum class ExtIntTriggerType : DeviceAtMega328p::ValueTypeUnsigned {

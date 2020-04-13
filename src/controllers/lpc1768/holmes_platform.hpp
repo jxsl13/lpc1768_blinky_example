@@ -12,7 +12,7 @@ namespace holmes
 
 
 
-	using ExtIntType = internal::ExternalInterrupt<DeviceLPC1768, internal::ExtIntIndexType, internal::ExtIntTriggerType>;
+	using ExtIntType = internal::ExternalInterrupt<DeviceLPC1768, internal::ExtIntConfigType, internal::ExtIntTriggerType>;
 
     using VectorTable = internal::InterruptVectorTable<DeviceLPC1768, IRQType>;
 

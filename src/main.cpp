@@ -11,28 +11,25 @@
 // type aliases
 using IRQType =             holmes::IRQType;
 using ExtIntType =          holmes::ExtIntType;
-using ExtIntIndexType =     ExtIntType::IndexType;
+using ExtIntConfigType =    ExtIntType::ConfigType;
 using ExtIntTriggerType =   ExtIntType::TriggerType;
 
 // microcontroller specific configuration
 #if defined ATMEGA328P
+    IRQType IRQ_EINT0         = IRQType::IRQn_INT0;
 
-    IRQType IRQ_EINT0 =         IRQType::IRQn_INT0;
-    ExtIntIndexType IDX_EXTI0 = ExtIntIndexType::IDX_INT0;
+    ExtIntConfigType CFG_EXTI0 = ExtIntConfigType::CFG_INT0_PD2;
     ExtIntTriggerType TRIGGER = ExtIntTriggerType::TRIGGER_EDGE_RISING;
-
 #elif defined LPC1768
+    IRQType IRQ_EINT0         = IRQType::IRQn_EINT0;
 
-    IRQType IRQ_EINT0 =         IRQType::IRQn_EINT0;
-    ExtIntIndexType IDX_EXTI0 = ExtIntIndexType::IDX_EINT0;
+    ExtIntConfigType CFG_EXTI0 = ExtIntConfigType::CFG_EINT0_P2_10;
     ExtIntTriggerType TRIGGER = ExtIntTriggerType::TRIGGER_EDGE_RISING;
-
 #elif defined STM32F407VG
-
-    IRQType IRQ_EINT0 =         IRQType::IRQn_EXTI0;
-    ExtIntIndexType IDX_EXTI0 = ExtIntIndexType::IDX_EXTI0_PA0;
+    IRQType IRQ_EINT0         = IRQType::IRQn_EXTI0;
+    
+    ExtIntConfigType CFG_EXTI0 = ExtIntConfigType::CFG_EXTI0_PA0;
     ExtIntTriggerType TRIGGER = ExtIntTriggerType::TRIGGER_EDGE_FALLING;
-
 #endif
 
 /**
@@ -58,30 +55,29 @@ void Blinking(unsigned int times = 1, unsigned int ms = 300)
 
 void PushButton_Handler()
 {
-    Blinking(1, 500);    // Blink with ~500 ms delay
-    ExtIntType::clearPendingBitOf(IDX_EXTI0);
+    
+    ExtIntType::clearPendingBitOf(CFG_EXTI0);
 }
 
 int main()
 {   
-    // GPIO select function, init vectortable
-    holmes::init();
-    DisableLED();
+    holmes::init(); // init GPIO, init vectortable
 
-    auto& vectorTable = holmes::instances::vectorTable();
-    auto exti0Cfg = ExtIntType(IDX_EXTI0, TRIGGER);
+    auto exti0Cfg = ExtIntType(CFG_EXTI0, TRIGGER);
     exti0Cfg.apply();
 
-    // PushButton_Handler is called when INT0/EINT0/EXTI0 is triggered
-    vectorTable.setISR(IRQ_EINT0, PushButton_Handler);
+    auto& vectorTable = holmes::instances::vectorTable();
+    vectorTable.setISR(IRQ_EINT0, []() {
+        Blinking(1, 500);           // Blink with ~500 ms delay
+        ExtIntType::clearPendingBitOf(CFG_EXTI0);
+    });
+
     vectorTable.enableISR(IRQ_EINT0);
-    
-    // enable global interrupts
     vectorTable.enableIRQ(); 
 
     while(1)
     {
         vectorTable.waitForIRQ();
-        Blinking(4, 250);
+        Blinking(4, 250);           // Blink 4 times with ~250 ms delay
     } 
 }
