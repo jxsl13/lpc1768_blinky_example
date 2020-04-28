@@ -144,6 +144,8 @@ int main()
 {   
     holmes::init(); // init GPIO, init vectortable
     delay_ms(1000);
+    Blinking(4, 100);
+    delay_ms(1000);
     
     //TestIsEnabledIRQ();
     // int size = NumInterrupts;
@@ -156,7 +158,7 @@ int main()
     // {
     //     Blinking(1, 1000);
     // } else {
-    //     Blinking(NumInterrupts, 5000);
+    //     Blinking(NumInterrupts, 300);
     // }
 
     TestTriggerISR(static_cast<IRQType>(5));
