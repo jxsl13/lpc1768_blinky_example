@@ -110,7 +110,7 @@ void TestTriggerISR(IRQType irq) {
     
     vectorTable.setISR(irq, [](){
         NumInterrupts--; // if used for testing
-        //Blinking(1, 1000);
+        Blinking(1, 1000);
     });
     
     vectorTable.enableISR(irq);
@@ -146,18 +146,20 @@ int main()
     delay_ms(1000);
     
     //TestIsEnabledIRQ();
-    int size = NumInterrupts;
-    for (int i = 1; i < size; i++) {
-        TestTriggerISR(static_cast<IRQType>(i));
-    }
+    // int size = NumInterrupts;
+    // for (int i = 1; i < size; i++) {
+    //     TestTriggerISR(static_cast<IRQType>(i));
+    // }
 
-    delay_ms(1000);
-    if (NumInterrupts == 0)
-    {
-        Blinking(1, 1000);
-    } else {
-        Blinking(NumInterrupts, 5000);
-    }
+    // delay_ms(1000);
+    // if (NumInterrupts == 0)
+    // {
+    //     Blinking(1, 1000);
+    // } else {
+    //     Blinking(NumInterrupts, 5000);
+    // }
+
+    TestTriggerISR(static_cast<IRQType>(5));
     
     
     while(1){} 
