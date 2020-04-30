@@ -16,10 +16,8 @@
  * 
  * The RESET IRQ is being ignored, thus only 25 of 26 interrupts are defined.
  */
-extern "C" {
-    static void (*s_VectorTable[25])(void) = {[](){},};
-    static uint16_t s_VTable[25] = {0, };
-}
+typedef void(*ISRType)(void);
+static ISRType s_VectorTable[25] = {0x0,};
 
 
 
@@ -205,7 +203,7 @@ namespace internal
          * InterruptIndex is actually a valid Interrupt index,
          * as enum class variables are enfoced to be typesafe contrary to simple enums
          */
-        s_VTable[static_cast<uint8_t>(InterruptIndex)] = reinterpret_cast<uint16_t>(Callback);
+        s_VectorTable[static_cast<uint8_t>(InterruptIndex)] = Callback;
     }
 
     auto InterruptVectorTable<DeviceAtMega328p, IRQType>::enableIRQ() -> void
@@ -270,8 +268,7 @@ namespace internal
             return;
 
         // emulate interrupt call by calling the function
-        void (*Callback)() = reinterpret_cast<void(*)()>(s_VTable[index]);
-        Callback();
+        s_VectorTable[index]();
     }
 
     auto InterruptVectorTable<DeviceAtMega328p, IRQType>::waitForIRQ() -> void
